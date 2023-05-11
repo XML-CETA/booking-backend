@@ -15,6 +15,19 @@ services:
     networks:
       - network
 
+  reservation_service:
+    image: reservation_service
+    container_name: reservation_service
+    hostname: reservation_service
+    build:
+      context: ./reservation-service/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      RESERVATION_SERVICE_ADDRESS: ${RESERVATION_SERVICE_ADDRESS}
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -25,9 +38,11 @@ services:
     restart: always
     environment:
       GREETER_SERVICE_ADDRESS: greeter_service:8000
+      RESERVATION_SERVICE_ADDRESS: reservation_service:8001
       GATEWAY_ADDRESS: ${GATEWAY_ADDRESS}
     depends_on:
       - greeter_service
+      - reservation_service
     networks:
       - network
     ports:

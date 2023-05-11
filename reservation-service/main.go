@@ -3,7 +3,7 @@ package main
 import (
 	"example/grpc/config"
 	"example/grpc/handlers"
-	"example/grpc/proto/greeter"
+	"example/grpc/proto/reservation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -33,8 +33,8 @@ func main() {
 	reflection.Register(grpcServer)
 
 	// Bootstrap gRPC service server and respond to request.
-	greeterHandler := handlers.GreeterHandler{}
-	greeter.RegisterGreeterServiceServer(grpcServer, greeterHandler)
+	reservationHandler := handlers.ReservationHandler{}
+	reservation.RegisterReservationServiceServer(grpcServer, reservationHandler)
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {

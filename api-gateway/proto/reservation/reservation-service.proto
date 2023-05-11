@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "proto/reservation";
+
+import "google/api/annotations.proto";
+
+service ReservationService {
+  rpc Create(ReservationCreateRequest) returns (ReservationCreateResponse) {
+    option (google.api.http) = {
+      post: "/reservations"
+      body: "*"
+    };
+  }
+
+}
+
+message ReservationCreateRequest {
+  string name = 1;
+}
+
+message ReservationCreateResponse {
+  string greeting = 2;
+}
