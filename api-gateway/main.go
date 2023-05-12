@@ -4,6 +4,7 @@ import (
 	"context"
 	"example/gateway/config"
 	"example/gateway/proto/greeter"
+	"example/gateway/proto/reservation"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,7 +18,7 @@ import (
 func main() {
 	cfg := config.GetConfig()
 
-	conn, err := grpc.DialContext(
+	greeterConn, err := grpc.DialContext(
 		context.Background(),
 		cfg.GreeterServiceAddress,
 		grpc.WithBlock(),
@@ -28,18 +29,39 @@ func main() {
 		log.Fatalln("Failed to dial server:", err)
 	}
 
+	reservationConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.ReservationServiceAddress,
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		log.Fatalln("Failed to dial server:", err)
+	}
+
 	gwmux := runtime.NewServeMux()
 	// Register Greeter
-	client := greeter.NewGreeterServiceClient(conn)
+	greeterClient := greeter.NewGreeterServiceClient(greeterConn)
 	err = greeter.RegisterGreeterServiceHandlerClient(
-		context.Background(), 
+		context.Background(),
 		gwmux,
-		client,
+		greeterClient,
 	)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
 	}
 
+	// Register Reservation
+	reservationClient := reservation.NewReservationServiceClient(reservationConn)
+	err = reservation.RegisterReservationServiceHandlerClient(
+		context.Background(),
+		gwmux,
+		reservationClient,
+	)
+	if err != nil {
+		log.Fatalln("Failed to register gateway:", err)
+	}
 	gwServer := &http.Server{
 		Addr:    cfg.Address,
 		Handler: gwmux,

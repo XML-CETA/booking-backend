@@ -15,3 +15,9 @@ func (h GreeterHandler) Greet(ctx context.Context, request *greeter.Request) (*g
 		Greeting: fmt.Sprintf("Hi %s!", request.Name),
 	}, nil
 }
+
+func (h GreeterHandler) GreetTest(ctx context.Context, request *greeter.Request) (*greeter.Response, error) {
+	return &greeter.Response{
+		Greeting: fmt.Sprintf("Hi GET!"),
+	}, nil
+}

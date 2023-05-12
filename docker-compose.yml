@@ -15,6 +15,20 @@ services:
     networks:
       - network
 
+  reservation_service:
+    image: reservation_service
+    container_name: reservation_service
+    hostname: reservation_service
+    build:
+      context: ./reservation-service/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      RESERVATION_SERVICE_ADDRESS: ${RESERVATION_SERVICE_ADDRESS}
+      RESERVATIONS_DATABASE_URI: ${RESERVATIONS_DATABASE_URI}
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -25,14 +39,36 @@ services:
     restart: always
     environment:
       GREETER_SERVICE_ADDRESS: greeter_service:8000
+      RESERVATION_SERVICE_ADDRESS: reservation_service:8001
       GATEWAY_ADDRESS: ${GATEWAY_ADDRESS}
     depends_on:
       - greeter_service
+      - reservation_service
     networks:
       - network
     ports:
       - "8000:8000"
 
+  reservation_service_db:
+    image: mongo
+    restart: always
+    networks:
+      - network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${RESERVATIONS_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${RESERVATIONS_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${RESERVATIONS_INITDB_DATABASE}
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - mongo_store:/data/db
+
 networks:
   network:
     driver: bridge
+
+volumes:
+  mongo_store:
