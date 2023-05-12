@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "proto/users";
+
+service UsersService {
+  rpc CreateUser(CreateRequest) returns (CreateResponse) {}
+  rpc UpdateUser(UpdateRequest) returns (UpdateResponse) {}
+  rpc DeleteUser(DeleteRequest) returns (DeleteResponse) {}
+}
+
+message Address {
+  string street = 1;
+  int32 number = 2;
+  string city = 3;
+  string country =4;
+}
+
+message User {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+  string surname = 4;
+  Address address = 5;
+}
+
+message CreateRequest {
+  User user = 1;
+}
+
+message CreateResponse {
+  string error = 1;
+}
+
+message UpdateRequest {
+  User user = 1;
+}
+
+message UpdateResponse {
+  string error = 1;
+}
+
+message DeleteRequest {
+  string userId = 1;
+}
+
+message DeleteResponse {
+  string error = 1;
+}
