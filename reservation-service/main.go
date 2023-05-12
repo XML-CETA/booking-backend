@@ -4,13 +4,16 @@ import (
 	"example/grpc/config"
 	"example/grpc/handlers"
 	"example/grpc/proto/reservation"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	"example/grpc/repo"
+	"example/grpc/service"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -32,7 +35,13 @@ func main() {
 	reflection.Register(grpcServer)
 
 	// Bootstrap gRPC service server and respond to request.
-	reservationHandler := handlers.ReservationHandler{}
+	repo := repo.Repository{}
+	service := service.Service{
+		Repo: &repo,
+	}
+	reservationHandler := handlers.ReservationHandler{
+		Service: &service,
+	}
 	reservation.RegisterReservationServiceServer(grpcServer, reservationHandler)
 
 	go func() {
