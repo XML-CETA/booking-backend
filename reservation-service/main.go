@@ -23,7 +23,6 @@ func main() {
 	defer func(listener net.Listener) {
 		err := listener.Close()
 		if err != nil {
-
 			log.Fatal(err)
 		}
 	}(listener)
