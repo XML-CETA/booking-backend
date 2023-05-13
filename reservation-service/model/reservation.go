@@ -1,5 +1,7 @@
 package model
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Status int32
 
 const (
@@ -9,11 +11,23 @@ const (
 )
 
 type Reservation struct{
-	id int32
-	accomodation int32
-	offer int32
-	dateFrom string
-	dateTo string
-	status Status
+	Id primitive.ObjectID `bson:"_id,omitempty"`
+	Accommodation int32
+	Offer int32
+	DateFrom string
+	DateTo string
+	Guests int32
+	Status Status
+}
+
+
+func MakeReservation(accommodation, offer, guests int32, dateFrom, dateTo string) Reservation {
+	return Reservation{
+		Accommodation:  accommodation,
+		Offer: offer,
+		Guests: guests,
+		DateFrom: dateFrom,
+		DateTo: dateTo,
+	}
 }
 
