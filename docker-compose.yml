@@ -38,8 +38,8 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      RESERVATION_SERVICE_ADDRESS: ${USER_SERVICE_ADDRESS}
-      RESERVATIONS_DATABASE_URI: ${USERS_DATABASE_URI}
+      USER_SERVICE_ADDRESS: ${USER_SERVICE_ADDRESS}
+      USERS_DATABASE_URI: ${USERS_DATABASE_URI}
     networks:
       - network
 
@@ -82,7 +82,7 @@ services:
     volumes:
       - mongo_store:/data/db
 
-  user_service_db:
+  users_service_db:
     image: mongo
     restart: always
     networks:
@@ -97,7 +97,7 @@ services:
       timeout: 10s
       retries: 10
     volumes:
-      - mongo_store:/data/db
+      - user_store:/data/db
 
 networks:
   network:
@@ -105,3 +105,4 @@ networks:
 
 volumes:
   mongo_store:
+  user_store:
