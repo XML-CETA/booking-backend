@@ -19,13 +19,22 @@ func (h ReservationHandler) Create(ctx context.Context, request *reservation.Res
 
 	err := h.Service.CreateReservation(newReservation)
 	if err != nil {
-		return &reservation.ReservationCreateResponse{
-			Greeting: fmt.Sprintf("Failed to create: %s", err),
-		}, err
+		return nil, err;
 	}
 
 	return &reservation.ReservationCreateResponse{
-		Greeting: fmt.Sprintf("%+v created", newReservation),
+		Data: fmt.Sprintf("Created"),
 	}, nil
 }
 
+func (h ReservationHandler) GetAll(ctx context.Context, request *reservation.GetAllRequest) (*reservation.GetAllResponse, error) {
+	reservations, err := h.Service.GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &reservation.GetAllResponse{
+		Reservations: h.Service.ConvertToGrpcList(reservations),
+	}, nil
+}
