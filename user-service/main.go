@@ -4,6 +4,8 @@ import (
 	"example/grpc/config"
 	"example/grpc/handlers"
 	"example/grpc/proto/users"
+	"example/grpc/repo"
+	"example/grpc/service"
 	"log"
 	"net"
 	"os"
@@ -33,7 +35,9 @@ func main() {
 	reflection.Register(grpcServer)
 
 	// Bootstrap gRPC service server and respond to request.
-	greeterHandler := handlers.UserHandler{}
+	repos := repo.UserRepository{}
+	servc := service.UserService{Repo: &repos}
+	greeterHandler := handlers.UserHandler{Service: &servc}
 	users.RegisterUsersServiceServer(grpcServer, greeterHandler)
 
 	go func() {

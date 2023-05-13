@@ -2,12 +2,7 @@ syntax = "proto3";
 
 option go_package = "proto/users";
 
-service UsersService {
-  rpc CreateUser(CreateRequest) returns (CreateResponse) {}
-  rpc UpdateUser(UpdateRequest) returns (UpdateResponse) {}
-  rpc DeleteUser(DeleteRequest) returns (DeleteResponse) {}
-  rpc LoginCheck(LoginRequest) returns (LoginResponse) {}
-}
+import "google/api/annotations.proto";
 
 message Address {
   string street = 1;
@@ -22,7 +17,31 @@ message User {
   string name = 3;
   string surname = 4;
   Address address = 5;
-  string role = 6;
+}
+
+service UsersService {
+  rpc CreateUser(CreateRequest) returns (CreateResponse) {
+    option (google.api.http) = {
+      post: "/register"
+      body: "*"
+    };
+  }
+  rpc UpdateUser(UpdateRequest) returns (UpdateResponse) {
+    option (google.api.http) = {
+      put: "/user"
+      body: "*"
+    };
+  }
+  rpc DeleteUser(DeleteRequest) returns (DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/user/{userEmail}"
+    };
+  }
+  rpc LoginCheck(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      get: "/user/login"
+    };
+  }
 }
 
 message CreateRequest {
@@ -51,7 +70,7 @@ message DeleteResponse {
 
 message LoginRequest {
   string email = 1;
-  string password =2;
+  string password = 2;
 }
 
 message LoginResponse {
