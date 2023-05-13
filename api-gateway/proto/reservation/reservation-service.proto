@@ -22,5 +22,5 @@ message ReservationCreateRequest {
 }
 
 message ReservationCreateResponse {
-  string greeting = 2;
+  string data = 2;
 }
