@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "booking-backend/common/accommodation_service";
+
+import "google/api/annotations.proto";
+
+service AccommodationService{
+    rpc Create(AccommodationCreateRequest) returns (AccommodationCreateResponse) {
+      option (google.api.http) = {
+        post: "/accommodations"
+        body: "*"
+      };
+    }
+    rpc GetAll(GetAllAccommodationRequest) returns (GetAllAccommodationResponse) {
+      option (google.api.http) = {
+        get: "/accommodations"
+      };
+    }
+  }
+  
+  
+message SingleAccommodation{
+string id = 1;
+double longitude = 2;
+double latitude = 3;
+int32 minGuests = 4;
+int32 maxGuests = 5;
+string name = 6;
+}
+
+message AccommodationCreateRequest {
+    double longitude = 1;
+    double latitude = 2;
+    int32 minGuests = 3;
+    int32 maxGuests = 4;
+    string name = 5;
+}
+
+message AccommodationCreateResponse {
+string data = 1;
+}
+
+message GetAllAccommodationRequest{
+}
+
+message GetAllAccommodationResponse{
+repeated SingleAccommodation accommodations = 1;
+}

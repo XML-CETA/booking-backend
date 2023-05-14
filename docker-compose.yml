@@ -1,6 +1,22 @@
 version: "3.8"
 
 services:
+  accommodation_service:
+    image: accommodation_service
+    container_name: accommodation_service
+    build:
+      context: .
+      dockerfile: ./accommodation_service/Dockerfile
+    restart: on-failure
+    environment:
+      ACCOMMODATION_DB_HOST: ${ACCOMMODATION_DB_HOST}
+      ACCOMMODATION_DB_PORT: ${ACCOMMODATION_DB_PORT}
+      ACCOMMODATION_SERVICE_PORT: ${ACCOMMODATION_SERVICE_PORT}
+    depends_on:
+      - accommodation_db
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -14,8 +30,26 @@ services:
       GATEWAY_PORT: ${GATEWAY_PORT}
       RESERVATION_SERVICE_HOST: ${RESERVATION_SERVICE_HOST}
       RESERVATION_SERVICE_PORT: ${RESERVATION_SERVICE_PORT}
+      ACCOMMODATION_SERVICE_HOST: ${ACCOMMODATION_SERVICE_HOST}
+      ACCOMMODATION_SERVICE_PORT: ${ACCOMMODATION_SERVICE_PORT}
       USER_SERVICE_HOST: ${USER_SERVICE_HOST}
       USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+    networks:
+      - network
+
+  accommodation_service:
+    image: accommodation_service
+    container_name: accommodation_service
+    build:
+      context: .
+      dockerfile: ./accommodation_service/Dockerfile
+    restart: on-failure
+    environment:
+      ACCOMMODATION_DB_HOST: ${ACCOMMODATION_DB_HOST}
+      ACCOMMODATION_DB_PORT: ${ACCOMMODATION_DB_PORT}
+      ACCOMMODATION_SERVICE_PORT: ${ACCOMMODATION_SERVICE_PORT}
+    depends_on:
+      - accommodation_db
     networks:
       - network
 
@@ -32,13 +66,6 @@ services:
       RESERVATION_SERVICE_PORT: ${RESERVATION_SERVICE_PORT}
     depends_on:
       - reservation_db
-    networks:
-      - network
-
-  reservation_db:
-    image: mongo
-    container_name: reservation_db
-    restart: on-failure
     networks:
       - network
 
@@ -61,6 +88,20 @@ services:
   users_db:
     image: mongo
     container_name: users_db
+    restart: on-failure
+    networks:
+      - network
+
+  reservation_db:
+    image: mongo
+    container_name: reservation_db
+    restart: on-failure
+    networks:
+      - network
+
+  accommodation_db:
+    image: mongo
+    container_name: accommodation_db
     restart: on-failure
     networks:
       - network
