@@ -1,8 +1,8 @@
 package application
 
 import (
-	"booking-backend/reservation-service/domain"
 	pb "booking-backend/common/proto/reservation_service"
+	"booking-backend/reservation-service/domain"
 	"errors"
 )
 
@@ -21,7 +21,7 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 
 	_, err := service.store.GetFirstByDates(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
-	if (err == nil) {
+	if err == nil {
 		return errors.New("Could not create, reservation with the same interval already exists")
 	}
 
@@ -39,13 +39,13 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 
 	for _, entity := range reservations {
 		newRes := pb.Reservation{
-			Id: entity.Id.Hex(),
+			Id:            entity.Id.Hex(),
 			Accommodation: entity.Accommodation,
-			DateFrom: entity.DateFrom,
-			DateTo: entity.DateTo,
-			Guests: entity.Guests,
-			Offer: entity.Offer,
-			Status: int32(entity.Status),
+			DateFrom:      entity.DateFrom,
+			DateTo:        entity.DateTo,
+			Guests:        entity.Guests,
+			Offer:         entity.Offer,
+			Status:        int32(entity.Status),
 		}
 
 		converted = append(converted, &newRes)

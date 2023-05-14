@@ -1,12 +1,12 @@
-package persistence
+package persistance
 
 import (
 	"context"
+	"log"
 
 	"booking-backend/accommodation_service/domain"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,17 +26,28 @@ func NewAccommodationMongoDBStore(client *mongo.Client) domain.AccommodationStor
 	}
 }
 
-func (store *AccommodationMongoDBStore) GetAll() ([]*domain.Accommodation, error) {
-	filter := bson.M{}
-	return store.filter(filter)
+func (store *AccommodationMongoDBStore) GetAll() ([]domain.Accommodation, error) {
+
+	var accommodations []domain.Accommodation
+	dataResult, err := store.accommodations.Find(context.Background(), bson.M{})
+	for dataResult.Next(context.TODO()) {
+		var accommodation domain.Accommodation
+		err := dataResult.Decode(&accommodation)
+		if err == nil {
+			accommodations = append(accommodations, accommodation)
+		}
+	}
+
+	return accommodations, err
 }
 
-func (store *AccommodationMongoDBStore) Create(Accommodation *domain.Accommodation) error {
-	result, err := store.accommodations.InsertOne(context.TODO(), Accommodation)
+func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodation) error {
+	result, err := store.accommodations.InsertOne(context.TODO(), accommodation)
 	if err != nil {
 		return err
 	}
-	Accommodation.Id = result.InsertedID.(primitive.ObjectID)
+	log.Println("Inserted with id: ", result.InsertedID)
+
 	return nil
 }
 

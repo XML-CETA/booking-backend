@@ -37,7 +37,7 @@ func (server *Server) Start() {
 
 	accommodationService := server.initAccommodationService(accommodationStore)
 
-	accommodationHandler := server.initAccommodationService(accommodationService)
+	accommodationHandler := server.initAccommodationHandler(accommodationService)
 
 	server.startGrpcServer(accommodationHandler)
 }
@@ -57,6 +57,10 @@ func (server *Server) initAccommodationStore(client *mongo.Client) domain.Accomm
 
 func (server *Server) initAccommodationService(store domain.AccommodationStore) *application.AccommodationService {
 	return application.NewAccommodationService(store)
+}
+
+func (server *Server) initAccommodationHandler(service *application.AccommodationService) *api.AccommodationHandler {
+	return api.NewAccommodationHandler(service)
 }
 
 func (server *Server) startGrpcServer(accommodationHandler *api.AccommodationHandler) {

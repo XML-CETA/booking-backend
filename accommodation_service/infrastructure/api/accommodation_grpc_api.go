@@ -15,7 +15,7 @@ type AccommodationHandler struct {
 	service *application.AccommodationService
 }
 
-func NewOrderHandler(service *application.AccommodationService) *AccommodationHandler {
+func NewAccommodationHandler(service *application.AccommodationService) *AccommodationHandler {
 	return &AccommodationHandler{
 		service: service,
 	}
@@ -23,17 +23,14 @@ func NewOrderHandler(service *application.AccommodationService) *AccommodationHa
 
 func (handler *AccommodationHandler) GetAll(ctx context.Context, request *pb.GetAllAccommodationRequest) (*pb.GetAllAccommodationResponse, error) {
 	accommodations, err := handler.service.GetAll()
+
 	if err != nil {
 		return nil, err
 	}
-	response := &pb.GetAllAccommodationResponse{
-		Accommodations: []*pb.Accommodation{},
-	}
-	for _, accommodation := range accommodations {
-		current := mapAccommodation(accommodation)
-		response.Accommodations = append(response.Accommodations, current)
-	}
-	return response, nil
+
+	return &pb.GetAllAccommodationResponse{
+		Accommodations: handler.service.ConvertToGrpcList(accommodations),
+	}, nil
 }
 
 func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.AccommodationCreateResponse, error) {

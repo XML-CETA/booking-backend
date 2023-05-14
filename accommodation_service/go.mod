@@ -4,8 +4,6 @@ go 1.20
 
 replace booking-backend/common => ../common
 
-replace booking-backend/accommodation_service => ./
-
 require (
 	booking-backend/common v0.0.0-00010101000000-000000000000
 	go.mongodb.org/mongo-driver v1.11.6

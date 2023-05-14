@@ -5,11 +5,7 @@ FROM golang:latest as builder
 WORKDIR /app
 
 # Copy go mod and sum files
-<<<<<<<< HEAD:reservation_service/Dockerfile
 COPY ./reservation_service/go.mod ./reservation_service/go.sum ./
-========
-COPY ./go.mod ./go.sum ./
->>>>>>>> 529bcdd (Doesnt Work):accommodation_service/Dockerfile
 
 # Copy the local dependency
 COPY /common ../common
@@ -18,11 +14,7 @@ COPY /common ../common
 RUN go mod download
 
 # Copy everything from the current directory to the Working Directory inside the container
-<<<<<<<< HEAD:reservation_service/Dockerfile
 COPY ./reservation_service/ .
-========
-COPY ./accommodation_service/ .
->>>>>>>> 529bcdd (Doesnt Work):accommodation_service/Dockerfile
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
