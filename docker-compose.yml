@@ -18,6 +18,8 @@ services:
       ACCOMMODATION_SERVICE_PORT: ${ACCOMMODATION_SERVICE_PORT}
       USER_SERVICE_HOST: ${USER_SERVICE_HOST}
       USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      AUTH_SERVICE_HOST: ${AUTH_SERVICE_HOST}
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
     networks:
       - network
 
@@ -73,6 +75,18 @@ services:
     image: mongo
     container_name: users_db
     restart: on-failure
+    networks:
+      - network
+
+  auth_service:
+    image: auth_service
+    container_name: auth_service
+    build:
+      context: .
+      dockerfile: ./auth_service/Dockerfile
+    restart: on-failure
+    environment:
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
     networks:
       - network
 
