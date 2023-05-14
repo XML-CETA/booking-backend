@@ -2,10 +2,11 @@ package api
 
 import (
 	"booking-backend/auth_service/application"
+	pb "booking-backend/common/proto/auth_service"
 )
 
 type AuthHandler struct {
-	//pb.UnimplementedAuthServiceServer
+	pb.UnimplementedAuthServiceServer
 	service *application.AuthService
 }
 

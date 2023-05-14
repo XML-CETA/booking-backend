@@ -9,6 +9,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	authProto "booking-backend/common/proto/auth_service"
 )
 
 type Server struct {
@@ -23,11 +24,11 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
-	reservationService := server.initAuthService()
+	authService := server.initAuthService()
 
-	reservationHandler := server.initAuthHandler(reservationService)
+	authHandler := server.initAuthHandler(authService)
 
-	server.startGrpcServer(reservationHandler)
+	server.startGrpcServer(authHandler)
 }
 
 
@@ -39,13 +40,13 @@ func (server *Server) initAuthHandler(service *application.AuthService) *api.Aut
 	return api.NewAuthHandler(service)
 }
 
-func (server *Server) startGrpcServer(productHandler *api.AuthHandler) {
+func (server *Server) startGrpcServer(authHandler *api.AuthHandler) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	//reservationProto.RegisterAuthServiceServer(grpcServer, productHandler)
+	authProto.RegisterAuthServiceServer(grpcServer, authHandler)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
