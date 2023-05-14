@@ -39,9 +39,6 @@ service UsersService {
     };
   }
   rpc LoginCheck(LoginRequest) returns (LoginResponse) {
-    option (google.api.http) = {
-      get: "/user/login"
-    };
   }
 }
 
