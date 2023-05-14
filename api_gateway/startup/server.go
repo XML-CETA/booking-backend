@@ -2,13 +2,15 @@ package startup
 
 import (
 	"booking-backend/common/proto/reservation_service"
+	users_service "booking-backend/common/proto/user_service"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	cfg "booking-backend/api_gateway/startup/config"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -34,6 +36,12 @@ func (server *Server) initHandlers() {
 	err := reservation_service.RegisterReservationServiceHandlerFromEndpoint(context.TODO(), server.mux, reservationEndpoint, opts)
 	if err != nil {
 		panic(err)
+	}
+
+	userEndpoint := fmt.Sprintf("%s:%s", server.config.UserHost, server.config.UserPort)
+	err1 := users_service.RegisterUsersServiceHandlerFromEndpoint(context.TODO(), server.mux, userEndpoint, opts)
+	if err1 != nil {
+		panic(err1)
 	}
 }
 
