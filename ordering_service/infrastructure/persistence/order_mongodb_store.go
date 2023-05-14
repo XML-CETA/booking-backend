@@ -3,7 +3,7 @@ package persistence
 import (
 	"context"
 	"errors"
-	"github.com/tamararankovic/microservices_demo/ordering_service/domain"
+	"booking-backend/ordering_service/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

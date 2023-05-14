@@ -1,9 +1,9 @@
 package api
 
 import (
-	events "github.com/tamararankovic/microservices_demo/common/saga/create_order"
-	saga "github.com/tamararankovic/microservices_demo/common/saga/messaging"
-	"github.com/tamararankovic/microservices_demo/inventory_service/application"
+	events "booking-backend/common/saga/create_order"
+	saga "booking-backend/common/saga/messaging"
+	"booking-backend/inventory_service/application"
 )
 
 type CreateOrderCommandHandler struct {

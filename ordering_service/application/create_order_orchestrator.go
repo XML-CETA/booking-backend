@@ -1,9 +1,9 @@
 package application
 
 import (
-	events "github.com/tamararankovic/microservices_demo/common/saga/create_order"
-	saga "github.com/tamararankovic/microservices_demo/common/saga/messaging"
-	"github.com/tamararankovic/microservices_demo/ordering_service/domain"
+	events "booking-backend/common/saga/create_order"
+	saga "booking-backend/common/saga/messaging"
+	"booking-backend/ordering_service/domain"
 )
 
 type CreateOrderOrchestrator struct {

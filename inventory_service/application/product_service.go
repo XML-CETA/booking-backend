@@ -1,6 +1,6 @@
 package application
 
-import "github.com/tamararankovic/microservices_demo/inventory_service/domain"
+import "booking-backend/inventory_service/domain"
 
 type ProductService struct {
 	store domain.ProductStore

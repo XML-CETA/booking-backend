@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/tamararankovic/microservices_demo/shipping_service/domain"
+	"booking-backend/shipping_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

@@ -2,7 +2,7 @@ package persistence
 
 import (
 	"errors"
-	"github.com/tamararankovic/microservices_demo/inventory_service/domain"
+	"booking-backend/inventory_service/domain"
 	"gorm.io/gorm"
 )
 

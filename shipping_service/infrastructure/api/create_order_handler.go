@@ -1,10 +1,10 @@
 package api
 
 import (
-	events "github.com/tamararankovic/microservices_demo/common/saga/create_order"
-	saga "github.com/tamararankovic/microservices_demo/common/saga/messaging"
-	"github.com/tamararankovic/microservices_demo/shipping_service/application"
-	"github.com/tamararankovic/microservices_demo/shipping_service/domain"
+	events "booking-backend/common/saga/create_order"
+	saga "booking-backend/common/saga/messaging"
+	"booking-backend/shipping_service/application"
+	"booking-backend/shipping_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

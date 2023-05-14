@@ -2,12 +2,12 @@ package startup
 
 import (
 	"fmt"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/application"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/domain"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/infrastructure/api"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/infrastructure/persistence"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/startup/config"
-	catalogue "github.com/tamararankovic/microservices_demo/common/proto/catalogue_service"
+	"booking-backend/catalogue_service/application"
+	"booking-backend/catalogue_service/domain"
+	"booking-backend/catalogue_service/infrastructure/api"
+	"booking-backend/catalogue_service/infrastructure/persistence"
+	"booking-backend/catalogue_service/startup/config"
+	catalogue "booking-backend/common/proto/catalogue_service"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"log"

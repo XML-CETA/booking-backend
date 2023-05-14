@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"github.com/tamararankovic/microservices_demo/catalogue_service/application"
-	pb "github.com/tamararankovic/microservices_demo/common/proto/catalogue_service"
+	"booking-backend/catalogue_service/application"
+	pb "booking-backend/common/proto/catalogue_service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

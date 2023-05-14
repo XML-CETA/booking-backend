@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/tamararankovic/microservices_demo/common/shipping";
-
-package shipping;
+option go_package = "booking-backend/common/proto/shipping_service";
 
 import "google/api/annotations.proto";
 

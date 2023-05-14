@@ -1,8 +1,8 @@
 package api
 
 import (
-	pb "github.com/tamararankovic/microservices_demo/common/proto/ordering_service"
-	"github.com/tamararankovic/microservices_demo/ordering_service/domain"
+	pb "booking-backend/common/proto/ordering_service"
+	"booking-backend/ordering_service/domain"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
