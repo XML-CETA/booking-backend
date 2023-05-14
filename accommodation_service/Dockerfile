@@ -5,11 +5,7 @@ FROM golang:latest as builder
 WORKDIR /app
 
 # Copy go mod and sum files
-<<<<<<<< HEAD:reservation_service/Dockerfile
 COPY ./reservation_service/go.mod ./reservation_service/go.sum ./
-========
-COPY ./go.mod ./go.sum ./
->>>>>>>> 529bcdd (Doesnt Work):accommodation_service/Dockerfile
 
 # Copy the local dependency
 COPY /common ../common
