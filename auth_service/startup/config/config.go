@@ -8,6 +8,6 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Port: os.Getenv("RESERVATION_SERVICE_PORT"),
+		Port: os.Getenv("AUTH_SERVICE_PORT"),
 	}
 }

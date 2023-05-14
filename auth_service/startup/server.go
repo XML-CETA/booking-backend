@@ -23,7 +23,6 @@ func NewServer(config *config.Config) *Server {
 }
 
 func (server *Server) Start() {
-
 	authService := server.initAuthService()
 
 	authHandler := server.initAuthHandler(authService)
@@ -50,4 +49,5 @@ func (server *Server) startGrpcServer(authHandler *api.AuthHandler) {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+
 }
