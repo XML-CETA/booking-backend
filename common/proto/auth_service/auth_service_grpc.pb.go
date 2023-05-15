@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	Login(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error)
 	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
 }
 
@@ -39,8 +39,8 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
-	out := new(LoginResponse)
+func (c *authServiceClient) Login(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error) {
+	out := new(AuthenticateResponse)
 	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (c *authServiceClient) Authorize(ctx context.Context, in *AuthorizeRequest,
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Login(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error)
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -70,7 +70,7 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+func (UnimplementedAuthServiceServer) Login(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedAuthServiceServer) Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error) {
@@ -90,7 +90,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+	in := new(AuthenticateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: AuthService_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
+		return srv.(AuthServiceServer).Login(ctx, req.(*AuthenticateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

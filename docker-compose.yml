@@ -71,13 +71,6 @@ services:
     networks:
       - network
 
-  users_db:
-    image: mongo
-    container_name: users_db
-    restart: on-failure
-    networks:
-      - network
-
   auth_service:
     image: auth_service
     container_name: auth_service
@@ -87,6 +80,13 @@ services:
     restart: on-failure
     environment:
       AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
+    networks:
+      - network
+
+  users_db:
+    image: mongo
+    container_name: users_db
+    restart: on-failure
     networks:
       - network
 

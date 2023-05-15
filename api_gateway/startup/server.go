@@ -1,12 +1,9 @@
 package startup
 
 import (
-<<<<<<< HEAD
 	cfg "booking-backend/api_gateway/startup/config"
 	accommodationGw "booking-backend/common/proto/accommodation_service"
-=======
 	"booking-backend/common/proto/auth_service"
->>>>>>> 573ca28 (Add jwt library)
 	"booking-backend/common/proto/reservation_service"
 	users_service "booking-backend/common/proto/user_service"
 	"context"
@@ -14,11 +11,6 @@ import (
 	"log"
 	"net/http"
 
-<<<<<<< HEAD
-=======
-	cfg "booking-backend/api_gateway/startup/config"
-
->>>>>>> 573ca28 (Add jwt library)
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -48,27 +40,24 @@ func (server *Server) initHandlers() {
 		panic(err)
 	}
 
-<<<<<<< HEAD
 	userEndpoint := fmt.Sprintf("%s:%s", server.config.UserHost, server.config.UserPort)
 	err = users_service.RegisterUsersServiceHandlerFromEndpoint(context.TODO(), server.mux, userEndpoint, opts)
-=======
-	authEndpoint := fmt.Sprintf("%s:%s", server.config.AuthHost, server.config.AuthPort)
-	log.Print(authEndpoint)
-	err = auth_service.RegisterAuthServiceHandlerFromEndpoint(context.TODO(), server.mux, authEndpoint, opts)
->>>>>>> 573ca28 (Add jwt library)
 	if err != nil {
 		panic(err)
 	}
 
-<<<<<<< HEAD
+	authEndpoint := fmt.Sprintf("%s:%s", server.config.AuthHost, server.config.AuthPort)
+	log.Print(authEndpoint)
+	err = auth_service.RegisterAuthServiceHandlerFromEndpoint(context.TODO(), server.mux, authEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
 	accommodationEndpoint := fmt.Sprintf("%s:%s", server.config.AccommodationHost, server.config.AccommodationPort)
 	err = accommodationGw.RegisterAccommodationServiceHandlerFromEndpoint(context.TODO(), server.mux, accommodationEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}
-=======
-
->>>>>>> 573ca28 (Add jwt library)
 }
 
 func (server *Server) Start() {
