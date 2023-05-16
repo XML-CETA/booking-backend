@@ -16,7 +16,7 @@ service AuthService {
 
 
 message AuthenticateRequest {
-	string username = 1;
+	string email = 1;
 	string password = 2;
 }
 
@@ -25,7 +25,6 @@ message AuthenticateResponse {
 }
 
 message AuthorizeRequest {
-	string token = 1;
 	string roleGuard = 2;
 }
 

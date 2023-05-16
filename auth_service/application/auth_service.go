@@ -1,9 +1,9 @@
 package application
 
 import (
+	"booking-backend/common/clients"
 	"booking-backend/common/proto/auth_service"
 	users_service "booking-backend/common/proto/user_service"
-	"booking-backend/common/clients"
 	"context"
 	"errors"
 	"fmt"
@@ -13,6 +13,7 @@ import (
 	"booking-backend/auth_service/startup/config"
 
 	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/grpc/metadata"
 )
 type AuthService struct {
 }
@@ -26,7 +27,7 @@ func (service *AuthService) Login(ctx context.Context, request *auth_service.Aut
 	userServiceClient := clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().UserServiceHost, config.NewConfig().UserServicePort))
 
 	login, err := userServiceClient.LoginCheck(ctx, &users_service.LoginRequest{
-		Email: request.Username,
+		Email: request.Email,
 		Password: request.Password,
 	})
 
@@ -34,16 +35,15 @@ func (service *AuthService) Login(ctx context.Context, request *auth_service.Aut
 		return "", err
 	}
 
-	return service.generateJwt(login.GetUser()	)
+	return service.generateJwt(login.GetUser())
 }
 
 func (service *AuthService) generateJwt(user *users_service.User) (string, error) {
-
 	secretKey := config.NewConfig().SecretKey
 
 	claims := config.Claims{
 		CustomClaims: map[string]string{
-			"email": user.Email,
+			"email":	user.Email,
 			"role":     user.Role,
 		},
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -52,15 +52,20 @@ func (service *AuthService) generateJwt(user *users_service.User) (string, error
 	}
 
 	tokenString := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tokenString.SignedString(secretKey)
+	token, err := tokenString.SignedString([]byte(secretKey))
 
 	return token, err
 }
 
-func (service *AuthService) Authorize(bearer, roleguard string) (error) {
-	if bearer == "" {
+func (service *AuthService) Authorize(ctx context.Context, roleguard string) (error) {
+	md, _ := metadata.FromIncomingContext(ctx)
+	header := md.Get("authorization")
+
+	if len(header) == 0 {
 		return errors.New("No authorization header")
 	}
+
+	bearer := header[0]
 
 	token, claims := service.parseJwt(bearer)
 	if !token.Valid {

@@ -29,13 +29,12 @@ func (h AuthHandler) Login(ctx context.Context, request *pb.AuthenticateRequest)
 }
 
 func (h AuthHandler) Authorize(ctx context.Context, request *pb.AuthorizeRequest) (*pb.AuthorizeResponse, error) {
-	success := false
-	err := h.service.Authorize(request.GetToken(), request.GetRoleGuard())
-	if err == nil {
-		success = true
+	err := h.service.Authorize(ctx, request.GetRoleGuard())
+	if err != nil {
+		return nil, err
 	}
 	return &pb.AuthorizeResponse{
-		Success: success,
+		Success: true,
 	}, nil
 }
 
