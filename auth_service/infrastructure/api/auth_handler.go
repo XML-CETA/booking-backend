@@ -18,9 +18,13 @@ func NewAuthHandler(service *application.AuthService) *AuthHandler {
 }
 
 func (h AuthHandler) Login(ctx context.Context, request *pb.AuthenticateRequest) (*pb.AuthenticateResponse, error) {
+	token, err := h.service.Login(ctx, request)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pb.AuthenticateResponse{
-		Token: "",
+		Token: token,
 	}, nil
 }
 

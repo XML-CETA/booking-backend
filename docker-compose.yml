@@ -80,6 +80,8 @@ services:
     restart: on-failure
     environment:
       AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
+      USER_SERVICE_HOST: ${USER_SERVICE_HOST}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
     networks:
       - network
 
