@@ -1,10 +1,11 @@
 package application
 
 import (
-	"booking-backend/auth_service/infrastructure/services"
 	"booking-backend/common/proto/auth_service"
 	users_service "booking-backend/common/proto/user_service"
+	"booking-backend/common/clients"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"booking-backend/auth_service/startup/config"
 
 	"github.com/golang-jwt/jwt/v5"
-	"google.golang.org/protobuf/internal/errors"
 )
 type AuthService struct {
 }
@@ -23,7 +23,7 @@ func NewAuthService() *AuthService {
 }
 
 func (service *AuthService) Login(ctx context.Context, request *auth_service.AuthenticateRequest) (string, error) {
-	userServiceClient := services.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().UserServiceHost, config.NewConfig().UserServicePort))
+	userServiceClient := clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().UserServiceHost, config.NewConfig().UserServicePort))
 
 	login, err := userServiceClient.LoginCheck(ctx, &users_service.LoginRequest{
 		Email: request.Username,
@@ -39,7 +39,7 @@ func (service *AuthService) Login(ctx context.Context, request *auth_service.Aut
 
 func (service *AuthService) generateJwt(user *users_service.User) (string, error) {
 
-	secretKey := []byte("hahabratemoj")
+	secretKey := config.NewConfig().SecretKey
 
 	claims := config.Claims{
 		CustomClaims: map[string]string{
@@ -59,16 +59,16 @@ func (service *AuthService) generateJwt(user *users_service.User) (string, error
 
 func (service *AuthService) Authorize(bearer, roleguard string) (error) {
 	if bearer == "" {
-		return errors.New(400,"No authorization header")
+		return errors.New("No authorization header")
 	}
 
 	token, claims := service.parseJwt(bearer)
 	if !token.Valid {
-		return errors.New(403,"Invalid token")
+		return errors.New("Invalid token")
 	}
 
 	if claims.CustomClaims["role"] != roleguard {
-		return errors.New(403,"You are unauthorized for this endpoint")
+		return errors.New("You are unauthorized for this endpoint")
 	}
 
 	return nil
@@ -77,7 +77,7 @@ func (service *AuthService) Authorize(bearer, roleguard string) (error) {
 func (service *AuthService) parseJwt(authorizationHeader string) (*jwt.Token, *config.Claims) {
 	tokenString := strings.TrimSpace(strings.Split(authorizationHeader, "Bearer")[1])
 	token, _ := jwt.ParseWithClaims(tokenString, &config.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte("hehebratemoj"), nil
+		return []byte(config.NewConfig().SecretKey), nil
 	}, jwt.WithLeeway(5*time.Second))
 
 	claims, _ := token.Claims.(*config.Claims)
