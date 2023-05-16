@@ -6,11 +6,13 @@ import (
 	users_service "booking-backend/common/proto/user_service"
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"booking-backend/auth_service/startup/config"
 
 	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/protobuf/internal/errors"
 )
 type AuthService struct {
 }
@@ -32,10 +34,10 @@ func (service *AuthService) Login(ctx context.Context, request *auth_service.Aut
 		return "", err
 	}
 
-	return service.GenerateJwt(login.GetUser())
+	return service.generateJwt(login.GetUser()	)
 }
 
-func (service *AuthService) GenerateJwt(user *users_service.User) (string, error) {
+func (service *AuthService) generateJwt(user *users_service.User) (string, error) {
 
 	secretKey := []byte("hahabratemoj")
 
@@ -54,3 +56,32 @@ func (service *AuthService) GenerateJwt(user *users_service.User) (string, error
 
 	return token, err
 }
+
+func (service *AuthService) Authorize(bearer, roleguard string) (error) {
+	if bearer == "" {
+		return errors.New(400,"No authorization header")
+	}
+
+	token, claims := service.parseJwt(bearer)
+	if !token.Valid {
+		return errors.New(403,"Invalid token")
+	}
+
+	if claims.CustomClaims["role"] != roleguard {
+		return errors.New(403,"You are unauthorized for this endpoint")
+	}
+
+	return nil
+}
+
+func (service *AuthService) parseJwt(authorizationHeader string) (*jwt.Token, *config.Claims) {
+	tokenString := strings.TrimSpace(strings.Split(authorizationHeader, "Bearer")[1])
+	token, _ := jwt.ParseWithClaims(tokenString, &config.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte("hehebratemoj"), nil
+	}, jwt.WithLeeway(5*time.Second))
+
+	claims, _ := token.Claims.(*config.Claims)
+
+	return token, claims
+}
+
