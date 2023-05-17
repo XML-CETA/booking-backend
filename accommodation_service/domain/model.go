@@ -7,16 +7,16 @@ import (
 )
 
 type Accommodation struct {
-	Id        primitive.ObjectID `json:"id,omitempty"  bson:"_id,omitempty"`
-	Longitude float64            `json:"longitude" bson:"longitude"`
-	Latitude  float64            `json:"latitude" bson:"latitude"`
-	Address   Address            `json:"address" bson"address"`
-	MinGuests int32              `json:"minGuests" bson:"minGuests"`
-	MaxGuests int32              `json:"maxGuests" bson:"maxGuests"`
-	Name      string             `json:"name" bson:"name"`
+	Id        primitive.ObjectID   `json:"id,omitempty"  bson:"_id,omitempty"`
+	Longitude float64              `json:"longitude" bson:"longitude"`
+	Latitude  float64              `json:"latitude" bson:"latitude"`
+	Address   AccommodationAddress `json:"address" bson"address"`
+	MinGuests int32                `json:"minGuests" bson:"minGuests"`
+	MaxGuests int32                `json:"maxGuests" bson:"maxGuests"`
+	Name      string               `json:"name" bson:"name"`
 }
 
-type Address struct {
+type AccommodationAddress struct {
 	Street  string `json:"street" bson:"street"`
 	Number  int32  `json:"number" bson:"number"`
 	City    string `json:"city" bson:"city"`
@@ -24,7 +24,7 @@ type Address struct {
 }
 
 func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest) Accommodation {
-	address := Address{
+	address := AccommodationAddress{
 		Street:  accommodation.Address.Street,
 		Number:  accommodation.Address.Number,
 		City:    accommodation.Address.City,
@@ -43,7 +43,7 @@ func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest) Accom
 
 func MakeAccommodation(accommodation *pb.SingleAccommodation) Accommodation {
 
-	address := Address{
+	address := AccommodationAddress{
 		Street:  accommodation.Address.Street,
 		Number:  accommodation.Address.Number,
 		City:    accommodation.Address.City,
