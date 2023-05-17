@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "booking-backend/common/proto/auth_service";
+
+import "google/api/annotations.proto";
+
+service AuthService {
+  rpc Login(AuthenticateRequest) returns (AuthenticateResponse) {
+    option (google.api.http) = {
+      post: "/login"
+      body: "*"
+    };
+  }
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse) {}
+}
+
+
+message AuthenticateRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message AuthenticateResponse {
+	string token = 1;
+}
+
+message AuthorizeRequest {
+	string roleGuard = 2;
+}
+
+message AuthorizeResponse {
+	bool success = 1;
+}
