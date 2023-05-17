@@ -41,6 +41,16 @@ func (store *AccommodationMongoDBStore) GetAll() ([]domain.Accommodation, error)
 	return accommodations, err
 }
 
+func (store *AccommodationMongoDBStore) GetById(id string) (domain.Accommodation, error) {
+
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	var result domain.Accommodation
+	err := store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
+
+	return result, err
+}
+
 func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodation) error {
 	result, err := store.accommodations.InsertOne(context.TODO(), accommodation)
 	if err != nil {
@@ -49,6 +59,28 @@ func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodatio
 	log.Println("Inserted with id: ", result.InsertedID)
 
 	return nil
+}
+
+func (store *AccommodationMongoDBStore) Update(accommodation domain.Accommodation) error {
+
+	filter := bson.D{{Key: "_id", Value: accommodation.Id}}
+
+	_, err := store.accommodations.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: accommodation}})
+
+	return err
+}
+
+func (store *AccommodationMongoDBStore) Delete(id string) error {
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	var result *domain.Accommodation
+	err := store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
+	if err == nil {
+		_, err2 := store.accommodations.DeleteOne(context.TODO(), result)
+		return err2
+	}
+
+	return err
 }
 
 // func (store *OrderMongoDBStore) DeleteAll() {

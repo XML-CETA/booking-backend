@@ -5,10 +5,21 @@ option go_package = "booking-backend/common/accommodation_service";
 import "google/api/annotations.proto";
 
 service AccommodationService{
-    rpc Create(AccommodationCreateRequest) returns (AccommodationCreateResponse) {
+    rpc Create(AccommodationCreateRequest) returns (Response) {
       option (google.api.http) = {
         post: "/accommodations"
         body: "*"
+      };
+    }
+    rpc Update(SingleAccommodation) returns (Response) {
+      option (google.api.http) = {
+        put: "/accommodations"
+        body: "*"
+      };
+    }
+    rpc Delete(AccommodationIdRequest) returns (Response) {
+      option (google.api.http) = {
+        delete: "/accommodations/{id}"
       };
     }
     rpc GetAll(GetAllAccommodationRequest) returns (GetAllAccommodationResponse) {
@@ -16,9 +27,21 @@ service AccommodationService{
         get: "/accommodations"
       };
     }
+    rpc GetById(AccommodationIdRequest) returns (SingleAccommodation) {
+      option (google.api.http) = {
+        get: "/accommodations/{id}"
+      };
+    }
   }
   
   
+message AccommodationAddress {
+  string street = 1;
+  int32 number = 2;
+  string city = 3;
+  string country =4;
+}
+
 message SingleAccommodation{
 string id = 1;
 double longitude = 2;
@@ -26,17 +49,19 @@ double latitude = 3;
 int32 minGuests = 4;
 int32 maxGuests = 5;
 string name = 6;
+AccommodationAddress address = 7;
 }
 
 message AccommodationCreateRequest {
-    double longitude = 1;
-    double latitude = 2;
-    int32 minGuests = 3;
-    int32 maxGuests = 4;
-    string name = 5;
+  double longitude = 1;
+  double latitude = 2;
+  int32 minGuests = 3;
+  int32 maxGuests = 4;
+  string name = 5;
+  AccommodationAddress address = 6;
 }
 
-message AccommodationCreateResponse {
+message Response {
 string data = 1;
 }
 
@@ -45,4 +70,8 @@ message GetAllAccommodationRequest{
 
 message GetAllAccommodationResponse{
 repeated SingleAccommodation accommodations = 1;
+}
+
+message AccommodationIdRequest{
+  string id = 1;
 }
