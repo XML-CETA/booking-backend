@@ -34,7 +34,6 @@ func (server *Server) initHandlers() {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	reservationEndpoint := fmt.Sprintf("%s:%s", server.config.ReservationHost, server.config.ReservationPort)
-	log.Print(reservationEndpoint)
 	err := reservation_service.RegisterReservationServiceHandlerFromEndpoint(context.TODO(), server.mux, reservationEndpoint, opts)
 	if err != nil {
 		panic(err)
@@ -47,7 +46,6 @@ func (server *Server) initHandlers() {
 	}
 
 	authEndpoint := fmt.Sprintf("%s:%s", server.config.AuthHost, server.config.AuthPort)
-	log.Print(authEndpoint)
 	err = auth_service.RegisterAuthServiceHandlerFromEndpoint(context.TODO(), server.mux, authEndpoint, opts)
 	if err != nil {
 		panic(err)
