@@ -29,21 +29,58 @@ func (handler *AccommodationHandler) GetAll(ctx context.Context, request *pb.Get
 	}
 
 	return &pb.GetAllAccommodationResponse{
-		Accommodations: handler.service.ConvertToGrpcList(accommodations),
+		Accommodations: accommodations,
 	}, nil
 }
 
-func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.AccommodationCreateResponse, error) {
+func (handler *AccommodationHandler) GetById(ctx context.Context, request *pb.AccommodationIdRequest) (*pb.SingleAccommodation, error) {
+	accommodation, err := handler.service.GetById(request.Id)
 
-	newAccommodation := domain.MakeAccommodation(request.Longitude, request.Latitude, request.MinGuests, request.MaxGuests, request.Name)
+	if err != nil {
+		return nil, err
+	}
 
-	fmt.Println(newAccommodation)
+	return accommodation, err
+}
+
+func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.Response, error) {
+
+	newAccommodation := domain.MakeCreateAccommodation(request)
+
 	err := handler.service.Create(newAccommodation)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.AccommodationCreateResponse{
+	return &pb.Response{
 		Data: fmt.Sprintf("Successfully Created!"),
+	}, nil
+}
+
+func (handler *AccommodationHandler) Update(ctx context.Context, request *pb.SingleAccommodation) (*pb.Response, error) {
+	acc := domain.MakeAccommodation(request)
+	err := handler.service.Update(acc)
+
+	if err != nil {
+		return &pb.Response{
+			Data: fmt.Sprint(err.Error()),
+		}, err
+	}
+
+	return &pb.Response{
+		Data: fmt.Sprintf("Succesfully updated"),
+	}, nil
+}
+
+func (handler *AccommodationHandler) Delete(ctx context.Context, request *pb.AccommodationIdRequest) (*pb.Response, error) {
+	err := handler.service.Delete(request.Id)
+	if err != nil {
+		return &pb.Response{
+			Data: fmt.Sprintf(err.Error()),
+		}, err
+	}
+
+	return &pb.Response{
+		Data: fmt.Sprintf("Succesfully deleted!"),
 	}, nil
 }
