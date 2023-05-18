@@ -33,8 +33,8 @@ func (service *AccommodationService) Create(accommodation domain.Accommodation) 
 }
 
 func (service *AccommodationService) Update(accommodation domain.Accommodation) error {
-	log.Println("USO U SERVICE")
-	return service.Update(accommodation)
+	log.Print(accommodation)
+	return service.store.Update(accommodation)
 }
 
 func (service *AccommodationService) Delete(id string) error {

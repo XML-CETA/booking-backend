@@ -59,14 +59,12 @@ func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.Acc
 }
 
 func (handler *AccommodationHandler) Update(ctx context.Context, request *pb.SingleAccommodation) (*pb.Response, error) {
-	log.Println("USO U HANDELR")
-
 	acc := domain.MakeAccommodation(request)
-
 	err := handler.service.Update(acc)
+
 	if err != nil {
 		return &pb.Response{
-			Data: fmt.Sprintf(err.Error()),
+			Data: fmt.Sprint(err.Error()),
 		}, err
 	}
 
