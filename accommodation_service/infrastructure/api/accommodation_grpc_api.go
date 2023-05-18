@@ -58,9 +58,12 @@ func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.Acc
 }
 
 func (handler *AccommodationHandler) Update(ctx context.Context, request *pb.SingleAccommodation) (*pb.Response, error) {
-	acc := domain.MakeAccommodation(request)
-	err := handler.service.Update(acc)
+	acc, err := domain.MakeAccommodation(request)
+	if err != nil {
+		return nil, err
+	}
 
+	err = handler.service.Update(acc)
 	if err != nil {
 		return &pb.Response{
 			Data: fmt.Sprint(err.Error()),
@@ -82,5 +85,37 @@ func (handler *AccommodationHandler) Delete(ctx context.Context, request *pb.Acc
 
 	return &pb.Response{
 		Data: fmt.Sprintf("Succesfully deleted!"),
+	}, nil
+}
+
+func (handler *AccommodationHandler) CreateAppointment(ctx context.Context, request *pb.SingleAppointment) (*pb.Response, error) {
+	createAppointment, err := domain.MakeCreateAppointment(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = handler.service.AddAppointment(createAppointment)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Response{
+		Data: fmt.Sprintf("Succesfully created!"),
+	}, nil
+}
+
+func (handler *AccommodationHandler) UpdateAppointment(ctx context.Context, request *pb.UpdateAppointmentRequest) (*pb.Response, error) {
+	updateAppointment, err := domain.MakeUpdateAppointment(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = handler.service.UpdateAppointment(updateAppointment)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Response{
+		Data: fmt.Sprintf("Succesfully updated!"),
 	}, nil
 }

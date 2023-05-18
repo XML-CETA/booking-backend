@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	AccommodationService_Create_FullMethodName  = "/AccommodationService/Create"
-	AccommodationService_Update_FullMethodName  = "/AccommodationService/Update"
-	AccommodationService_Delete_FullMethodName  = "/AccommodationService/Delete"
-	AccommodationService_GetAll_FullMethodName  = "/AccommodationService/GetAll"
-	AccommodationService_GetById_FullMethodName = "/AccommodationService/GetById"
+	AccommodationService_Create_FullMethodName            = "/AccommodationService/Create"
+	AccommodationService_Update_FullMethodName            = "/AccommodationService/Update"
+	AccommodationService_Delete_FullMethodName            = "/AccommodationService/Delete"
+	AccommodationService_GetAll_FullMethodName            = "/AccommodationService/GetAll"
+	AccommodationService_GetById_FullMethodName           = "/AccommodationService/GetById"
+	AccommodationService_CreateAppointment_FullMethodName = "/AccommodationService/CreateAppointment"
+	AccommodationService_UpdateAppointment_FullMethodName = "/AccommodationService/UpdateAppointment"
 )
 
 // AccommodationServiceClient is the client API for AccommodationService service.
@@ -35,6 +37,8 @@ type AccommodationServiceClient interface {
 	Delete(ctx context.Context, in *AccommodationIdRequest, opts ...grpc.CallOption) (*Response, error)
 	GetAll(ctx context.Context, in *GetAllAccommodationRequest, opts ...grpc.CallOption) (*GetAllAccommodationResponse, error)
 	GetById(ctx context.Context, in *AccommodationIdRequest, opts ...grpc.CallOption) (*SingleAccommodation, error)
+	CreateAppointment(ctx context.Context, in *SingleAppointment, opts ...grpc.CallOption) (*Response, error)
+	UpdateAppointment(ctx context.Context, in *UpdateAppointmentRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type accommodationServiceClient struct {
@@ -90,6 +94,24 @@ func (c *accommodationServiceClient) GetById(ctx context.Context, in *Accommodat
 	return out, nil
 }
 
+func (c *accommodationServiceClient) CreateAppointment(ctx context.Context, in *SingleAppointment, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, AccommodationService_CreateAppointment_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accommodationServiceClient) UpdateAppointment(ctx context.Context, in *UpdateAppointmentRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, AccommodationService_UpdateAppointment_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccommodationServiceServer is the server API for AccommodationService service.
 // All implementations must embed UnimplementedAccommodationServiceServer
 // for forward compatibility
@@ -99,6 +121,8 @@ type AccommodationServiceServer interface {
 	Delete(context.Context, *AccommodationIdRequest) (*Response, error)
 	GetAll(context.Context, *GetAllAccommodationRequest) (*GetAllAccommodationResponse, error)
 	GetById(context.Context, *AccommodationIdRequest) (*SingleAccommodation, error)
+	CreateAppointment(context.Context, *SingleAppointment) (*Response, error)
+	UpdateAppointment(context.Context, *UpdateAppointmentRequest) (*Response, error)
 	mustEmbedUnimplementedAccommodationServiceServer()
 }
 
@@ -120,6 +144,12 @@ func (UnimplementedAccommodationServiceServer) GetAll(context.Context, *GetAllAc
 }
 func (UnimplementedAccommodationServiceServer) GetById(context.Context, *AccommodationIdRequest) (*SingleAccommodation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
+}
+func (UnimplementedAccommodationServiceServer) CreateAppointment(context.Context, *SingleAppointment) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAppointment not implemented")
+}
+func (UnimplementedAccommodationServiceServer) UpdateAppointment(context.Context, *UpdateAppointmentRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAppointment not implemented")
 }
 func (UnimplementedAccommodationServiceServer) mustEmbedUnimplementedAccommodationServiceServer() {}
 
@@ -224,6 +254,42 @@ func _AccommodationService_GetById_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccommodationService_CreateAppointment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SingleAppointment)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccommodationServiceServer).CreateAppointment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccommodationService_CreateAppointment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccommodationServiceServer).CreateAppointment(ctx, req.(*SingleAppointment))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccommodationService_UpdateAppointment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAppointmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccommodationServiceServer).UpdateAppointment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccommodationService_UpdateAppointment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccommodationServiceServer).UpdateAppointment(ctx, req.(*UpdateAppointmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccommodationService_ServiceDesc is the grpc.ServiceDesc for AccommodationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +316,14 @@ var AccommodationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetById",
 			Handler:    _AccommodationService_GetById_Handler,
+		},
+		{
+			MethodName: "CreateAppointment",
+			Handler:    _AccommodationService_CreateAppointment_Handler,
+		},
+		{
+			MethodName: "UpdateAppointment",
+			Handler:    _AccommodationService_UpdateAppointment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

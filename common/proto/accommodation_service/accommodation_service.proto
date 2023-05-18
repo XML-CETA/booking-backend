@@ -32,9 +32,41 @@ service AccommodationService{
         get: "/accommodations/{id}"
       };
     }
+    rpc CreateAppointment(SingleAppointment) returns (Response){
+      option (google.api.http) = {
+        post: "/accommodations/appointment"
+        body: "*"
+      };
+    }
+    rpc UpdateAppointment(UpdateAppointmentRequest) returns (Response){
+      option (google.api.http) = {
+        put: "/accommodations/appointment"
+        body: "*"
+      };
+    }
   }
   
-  
+message SingleDateInterval{
+  string dateFrom = 1;
+  string dateTo = 2;
+}
+
+message SingleAppointment{
+  string accommodationId = 1;
+  SingleDateInterval interval = 2;
+  double price = 3;
+}
+
+message UpdateAppointmentRequest{
+  SingleAppointment oldAppointment = 1;
+  SingleAppointment newAppointment = 2;
+}
+
+message AppointmentResponse{
+  SingleDateInterval interval = 1;
+  double price = 2;
+}
+
 message AccommodationAddress {
   string street = 1;
   int32 number = 2;
@@ -50,6 +82,7 @@ int32 minGuests = 4;
 int32 maxGuests = 5;
 string name = 6;
 AccommodationAddress address = 7;
+repeated AppointmentResponse freeAppointments = 8;
 }
 
 message AccommodationCreateRequest {
