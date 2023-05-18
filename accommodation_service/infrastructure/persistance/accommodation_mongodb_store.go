@@ -7,6 +7,7 @@ import (
 	"booking-backend/accommodation_service/domain"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,14 +42,19 @@ func (store *AccommodationMongoDBStore) GetAll() ([]domain.Accommodation, error)
 	return accommodations, err
 }
 
-func (store *AccommodationMongoDBStore) GetById(id string) (domain.Accommodation, error) {
+func (store *AccommodationMongoDBStore) GetById(id string) (*domain.Accommodation, error) {
+	objId, err := primitive.ObjectIDFromHex(id)
 
-	filter := bson.D{{Key: "_id", Value: id}}
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{{Key: "_id", Value: objId}}
 
 	var result domain.Accommodation
-	err := store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
+	err = store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
 
-	return result, err
+	return &result, err
 }
 
 func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodation) error {
@@ -62,47 +68,29 @@ func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodatio
 }
 
 func (store *AccommodationMongoDBStore) Update(accommodation domain.Accommodation) error {
-
+	log.Println("USO U MONGO")
+	log.Println(accommodation.Id)
 	filter := bson.D{{Key: "_id", Value: accommodation.Id}}
 
 	_, err := store.accommodations.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: accommodation}})
+	log.Println(err)
 
 	return err
 }
 
 func (store *AccommodationMongoDBStore) Delete(id string) error {
-	filter := bson.D{{Key: "_id", Value: id}}
+	objId, err := primitive.ObjectIDFromHex(id)
 
-	var result *domain.Accommodation
-	err := store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
-	if err == nil {
-		_, err2 := store.accommodations.DeleteOne(context.TODO(), result)
-		return err2
+	if err != nil {
+		return err
 	}
+
+	var deleteAcc domain.Accommodation
+	filter := bson.D{{Key: "_id", Value: objId}}
+	err = store.accommodations.FindOneAndDelete(context.TODO(), filter).Decode(&deleteAcc)
 
 	return err
 }
-
-// func (store *OrderMongoDBStore) DeleteAll() {
-// 	store.orders.DeleteMany(context.TODO(), bson.D{{}})
-// }
-
-// func (store *OrderMongoDBStore) UpdateStatus(order *domain.Order) error {
-// 	result, err := store.orders.UpdateOne(
-// 		context.TODO(),
-// 		bson.M{"_id": order.Id},
-// 		bson.D{
-// 			{"$set", bson.D{{"status", order.Status}}},
-// 		},
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if result.MatchedCount != 1 {
-// 		return errors.New("one document should've been updated")
-// 	}
-// 	return nil
-// }
 
 func (store *AccommodationMongoDBStore) filter(filter interface{}) ([]*domain.Accommodation, error) {
 	cursor, err := store.accommodations.Find(context.TODO(), filter)
@@ -113,12 +101,6 @@ func (store *AccommodationMongoDBStore) filter(filter interface{}) ([]*domain.Ac
 	}
 	return decode(cursor)
 }
-
-// func (store *OrderMongoDBStore) filterOne(filter interface{}) (Order *domain.Order, err error) {
-// 	result := store.orders.FindOne(context.TODO(), filter)
-// 	err = result.Decode(&Order)
-// 	return
-// }
 
 func decode(cursor *mongo.Cursor) (accommodations []*domain.Accommodation, err error) {
 	for cursor.Next(context.TODO()) {

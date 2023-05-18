@@ -59,8 +59,9 @@ func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.Acc
 }
 
 func (handler *AccommodationHandler) Update(ctx context.Context, request *pb.SingleAccommodation) (*pb.Response, error) {
-	reqAccommodation := request
-	acc := domain.MakeAccommodation(reqAccommodation)
+	log.Println("USO U HANDELR")
+
+	acc := domain.MakeAccommodation(request)
 
 	err := handler.service.Update(acc)
 	if err != nil {

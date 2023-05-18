@@ -3,6 +3,7 @@ package application
 import (
 	"booking-backend/accommodation_service/domain"
 	pb "booking-backend/common/proto/accommodation_service"
+	"log"
 )
 
 type AccommodationService struct {
@@ -32,6 +33,7 @@ func (service *AccommodationService) Create(accommodation domain.Accommodation) 
 }
 
 func (service *AccommodationService) Update(accommodation domain.Accommodation) error {
+	log.Println("USO U SERVICE")
 	return service.Update(accommodation)
 }
 
@@ -43,14 +45,14 @@ func (service *AccommodationService) ConvertToGrpcList(accommodations []domain.A
 	var converted []*pb.SingleAccommodation
 
 	for _, entity := range accommodations {
-		newRes := service.ConvertToGrpc(entity)
+		newRes := service.ConvertToGrpc(&entity)
 		converted = append(converted, newRes)
 	}
 
 	return converted
 }
 
-func (service *AccommodationService) ConvertToGrpc(accommodation domain.Accommodation) *pb.SingleAccommodation {
+func (service *AccommodationService) ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation {
 
 	res := pb.SingleAccommodation{
 		Id:        accommodation.Id.Hex(),
