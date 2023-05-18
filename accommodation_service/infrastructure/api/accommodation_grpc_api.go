@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"booking-backend/accommodation_service/application"
 	"booking-backend/accommodation_service/domain"
@@ -74,7 +73,6 @@ func (handler *AccommodationHandler) Update(ctx context.Context, request *pb.Sin
 }
 
 func (handler *AccommodationHandler) Delete(ctx context.Context, request *pb.AccommodationIdRequest) (*pb.Response, error) {
-	log.Println(request.Id)
 	err := handler.service.Delete(request.Id)
 	if err != nil {
 		return &pb.Response{

@@ -3,7 +3,6 @@ package application
 import (
 	"booking-backend/accommodation_service/domain"
 	pb "booking-backend/common/proto/accommodation_service"
-	"log"
 )
 
 type AccommodationService struct {
@@ -33,7 +32,6 @@ func (service *AccommodationService) Create(accommodation domain.Accommodation) 
 }
 
 func (service *AccommodationService) Update(accommodation domain.Accommodation) error {
-	log.Print(accommodation)
 	return service.store.Update(accommodation)
 }
 

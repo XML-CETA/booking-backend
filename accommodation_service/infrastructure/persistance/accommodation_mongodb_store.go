@@ -68,12 +68,9 @@ func (store *AccommodationMongoDBStore) Create(accommodation domain.Accommodatio
 }
 
 func (store *AccommodationMongoDBStore) Update(accommodation domain.Accommodation) error {
-	log.Println("USO U MONGO")
-	log.Println(accommodation.Id)
 	filter := bson.D{{Key: "_id", Value: accommodation.Id}}
 
 	_, err := store.accommodations.UpdateOne(context.TODO(), filter, bson.D{{Key: "$set", Value: accommodation}})
-	log.Println(err)
 
 	return err
 }
