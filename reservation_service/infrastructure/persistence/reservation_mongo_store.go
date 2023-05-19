@@ -58,8 +58,11 @@ func (repo *ReservationMongoDBStore) GetAll() ([]domain.Reservation, error) {
 	return reservations, err
 }
 
-func (repo *ReservationMongoDBStore) GetById(reservation primitive.ObjectID) (domain.Reservation, error) {
-	filter :=bson.D{{ Key: "_id", Value: reservation }}
+func (repo *ReservationMongoDBStore) GetByIdAndUser(reservation primitive.ObjectID, user string) (domain.Reservation, error) {
+	filter :=bson.D{
+		{ Key: "_id", Value: reservation },
+		{ Key: "user", Value: user },
+	}
 
 	var result domain.Reservation
 	err := repo.reservations.FindOne(context.Background(), filter).Decode(&result)

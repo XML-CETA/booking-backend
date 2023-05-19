@@ -6,6 +6,6 @@ type ReservationStore interface {
 	GetAll() ([]Reservation, error)
 	CreateReservation(reservation Reservation) error
 	GetFirstActive(accommodation string, dateFrom, dateTo string) (Reservation, error)
-	GetById(reservation primitive.ObjectID) (Reservation, error)
+	GetByIdAndUser(reservation primitive.ObjectID, user string) (Reservation, error)
 	Delete(reservation primitive.ObjectID) (error)
 }

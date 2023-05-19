@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -46,13 +47,22 @@ func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
 	return service.store.GetAll()
 }
 
-func (service *ReservationService) Delete(reservation string) error {
-	id, err := primitive.ObjectIDFromHex(reservation)
+func (service *ReservationService) Delete(reservationId string, user string) error {
+	id, err := primitive.ObjectIDFromHex(reservationId)
 	if err != nil {
 		return err
 	}
 
-	//TODO: if status active then check dates
+	reservation, err := service.store.GetByIdAndUser(id, user)
+
+	if reservation.Status == domain.Waiting {
+		return service.store.Delete(id)
+	}
+
+	if !canDeleteReservation(reservation) {
+		return errors.New("Can not delete, reservation starts in less then a day or is in progress")
+	}
+
 	return service.store.Delete(id)
 }
 
@@ -88,4 +98,18 @@ func validateReservation(accommodationId, dateFrom, dateTo string) (*accommodati
 		DateFrom: dateFrom,
 		DateTo: dateTo,
 	})
+}
+
+func checkReservationDate(dateFrom string) bool {
+	date, err := time.Parse(time.DateOnly, dateFrom)
+	if err != nil {
+		return false
+	}
+
+	now := time.Now().UTC()
+	return now.UTC().Compare(date.AddDate(0, 0, -1)) == -1
+}
+
+func canDeleteReservation(reservation domain.Reservation) bool {
+	return reservation.Status == domain.Reserved && checkReservationDate(reservation.DateFrom)
 }
