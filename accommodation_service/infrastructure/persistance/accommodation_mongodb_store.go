@@ -42,17 +42,11 @@ func (store *AccommodationMongoDBStore) GetAll() ([]domain.Accommodation, error)
 	return accommodations, err
 }
 
-func (store *AccommodationMongoDBStore) GetById(id string) (*domain.Accommodation, error) {
-	objId, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	filter := bson.D{{Key: "_id", Value: objId}}
+func (store *AccommodationMongoDBStore) GetById(id primitive.ObjectID) (*domain.Accommodation, error) {
+	filter := bson.D{{Key: "_id", Value: id}}
 
 	var result domain.Accommodation
-	err = store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
+	err := store.accommodations.FindOne(context.TODO(), filter).Decode(&result)
 
 	return &result, err
 }
@@ -75,16 +69,10 @@ func (store *AccommodationMongoDBStore) Update(accommodation domain.Accommodatio
 	return err
 }
 
-func (store *AccommodationMongoDBStore) Delete(id string) error {
-	objId, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return err
-	}
-
+func (store *AccommodationMongoDBStore) Delete(id primitive.ObjectID) error {
 	var deleteAcc domain.Accommodation
-	filter := bson.D{{Key: "_id", Value: objId}}
-	err = store.accommodations.FindOneAndDelete(context.TODO(), filter).Decode(&deleteAcc)
+	filter := bson.D{{Key: "_id", Value: id}}
+	err := store.accommodations.FindOneAndDelete(context.TODO(), filter).Decode(&deleteAcc)
 
 	return err
 }

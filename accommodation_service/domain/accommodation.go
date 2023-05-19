@@ -7,13 +7,14 @@ import (
 )
 
 type Accommodation struct {
-	Id        primitive.ObjectID   `json:"id,omitempty"  bson:"_id,omitempty"`
-	Longitude float64              `json:"longitude" bson:"longitude"`
-	Latitude  float64              `json:"latitude" bson:"latitude"`
-	Address   AccommodationAddress `json:"address" bson"address"`
-	MinGuests int32                `json:"minGuests" bson:"minGuests"`
-	MaxGuests int32                `json:"maxGuests" bson:"maxGuests"`
-	Name      string               `json:"name" bson:"name"`
+	Id           primitive.ObjectID   `json:"id,omitempty"  bson:"_id,omitempty"`
+	Longitude    float64              `json:"longitude" bson:"longitude"`
+	Latitude     float64              `json:"latitude" bson:"latitude"`
+	Address      AccommodationAddress `json:"address" bson"address"`
+	MinGuests    int32                `json:"minGuests" bson:"minGuests"`
+	MaxGuests    int32                `json:"maxGuests" bson:"maxGuests"`
+	Name         string               `json:"name" bson:"name"`
+	Appointments []Appointment        `json:"appointments" bson:"appointments"`
 }
 
 type AccommodationAddress struct {
@@ -41,7 +42,7 @@ func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest) Accom
 	}
 }
 
-func MakeAccommodation(accommodation *pb.SingleAccommodation) Accommodation {
+func MakeAccommodation(accommodation *pb.SingleAccommodation) (Accommodation, error) {
 
 	address := AccommodationAddress{
 		Street:  accommodation.Address.Street,
@@ -50,7 +51,10 @@ func MakeAccommodation(accommodation *pb.SingleAccommodation) Accommodation {
 		Country: accommodation.Address.Country,
 	}
 
-	id, _ := primitive.ObjectIDFromHex(accommodation.Id)
+	id, err := primitive.ObjectIDFromHex(accommodation.Id)
+	if err != nil {
+		return Accommodation{}, err
+	}
 
 	return Accommodation{
 		Id:        id,
@@ -60,5 +64,5 @@ func MakeAccommodation(accommodation *pb.SingleAccommodation) Accommodation {
 		MaxGuests: accommodation.MaxGuests,
 		Name:      accommodation.Name,
 		Address:   address,
-	}
+	}, nil
 }

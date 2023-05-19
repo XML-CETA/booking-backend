@@ -3,6 +3,11 @@ package application
 import (
 	"booking-backend/accommodation_service/domain"
 	pb "booking-backend/common/proto/accommodation_service"
+	"errors"
+	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AccommodationService struct {
@@ -17,13 +22,17 @@ func NewAccommodationService(store domain.AccommodationStore) *AccommodationServ
 
 func (service *AccommodationService) GetAll() ([]*pb.SingleAccommodation, error) {
 	accommodations, err := service.store.GetAll()
-	grpcAccommodations := service.ConvertToGrpcList(accommodations)
+	grpcAccommodations := ConvertToGrpcList(accommodations)
 	return grpcAccommodations, err
 }
 
 func (service *AccommodationService) GetById(id string) (*pb.SingleAccommodation, error) {
-	accommodation, err := service.store.GetById(id)
-	grpcAccommodation := service.ConvertToGrpc(accommodation)
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	accommodation, err := service.store.GetById(objId)
+	grpcAccommodation := ConvertToGrpc(accommodation)
 	return grpcAccommodation, err
 }
 
@@ -36,21 +45,114 @@ func (service *AccommodationService) Update(accommodation domain.Accommodation) 
 }
 
 func (service *AccommodationService) Delete(id string) error {
-	return service.store.Delete(id)
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	return service.store.Delete(objId)
 }
 
-func (service *AccommodationService) ConvertToGrpcList(accommodations []domain.Accommodation) []*pb.SingleAccommodation {
+func (service *AccommodationService) AddAppointment(appointment domain.CreateAppointment) error {
+	accommodation, err := service.store.GetById(appointment.Id)
+	if err != nil {
+		return err
+	}
+	err = HasOverlap(appointment, accommodation.Appointments)
+	if err != nil {
+		return err
+	}
+
+	accommodation.Appointments = append(accommodation.Appointments, domain.MakeAppointmentFromCreateAppointment(appointment))
+	return service.store.Update(*accommodation)
+}
+
+func (service *AccommodationService) UpdateAppointment(appointment domain.UpdateAppointment) error {
+	accommodation, err := service.store.GetById(appointment.OldAppointment.Id)
+	if err != nil {
+		return err
+	}
+	appointments, err := RemoveOldAppointment(appointment.OldAppointment, accommodation.Appointments)
+	if err != nil {
+		return err
+	}
+
+	err = HasOverlap(appointment.NewAppointment, accommodation.Appointments)
+	if err != nil {
+		return err
+	}
+	accommodation.Appointments = append(appointments, domain.MakeAppointmentFromCreateAppointment(appointment.NewAppointment))
+	return service.store.Update(*accommodation)
+}
+
+func RemoveOldAppointment(oldAppointment domain.CreateAppointment, appointments []domain.Appointment) ([]domain.Appointment, error) {
+	for i, entity := range appointments {
+		if isExactOverlap(oldAppointment.Interval, entity.Interval) {
+			appointments[i] = appointments[len(appointments)-1]
+			return appointments[:len(appointments)-1], nil
+		}
+	}
+	return nil, errors.New("Old Appointment is not present in this Accommodation!")
+}
+
+func isExactOverlap(interval, accInterval domain.DateInterval) bool {
+	if interval.DateFrom == accInterval.DateFrom && interval.DateTo == accInterval.DateTo {
+		return true
+	}
+	return false
+}
+
+func HasOverlap(appointment domain.CreateAppointment, accAppointments []domain.Appointment) error {
+	interval := appointment.Interval
+	for _, entity := range accAppointments {
+		err := checkOverlap(interval, entity.Interval)
+		if err != nil {
+			return err
+		}
+		err = checkOverlap(entity.Interval, interval)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkOverlap(interval domain.DateInterval, helperInterval domain.DateInterval) error {
+	if helperInterval.DateFrom.Before(interval.DateFrom) && interval.DateFrom.Before(helperInterval.DateTo) {
+		return fmt.Errorf("The Interval =>%+v --> %+v<= is Inside this Interval =>%+v --> %+v<=! INTERVAL OVERLAP!",
+			interval.DateFrom, interval.DateTo, helperInterval.DateFrom, helperInterval.DateTo)
+	}
+	if helperInterval.DateFrom.Before(interval.DateTo) && interval.DateTo.Before(helperInterval.DateTo) {
+		return fmt.Errorf("The Interval =>%+v --> %+v<= is Inside this Interval =>%+v --> %+v<=! INTERVAL OVERLAP!",
+			interval.DateFrom, interval.DateTo, helperInterval.DateFrom, helperInterval.DateTo)
+	}
+	if interval.DateFrom == helperInterval.DateFrom && interval.DateTo == helperInterval.DateTo {
+		return fmt.Errorf("The Intervals =>%+v --> %+v<= and Interval =>%+v --> %+v<= overlap exactly! EXACT OVERLAP!",
+			interval.DateFrom, interval.DateTo, helperInterval.DateFrom, helperInterval.DateTo)
+	}
+	return nil
+}
+
+//GRPC CONVERTERS -> OVO IZMESTITI POSLE
+
+func ConvertToGrpcList(accommodations []domain.Accommodation) []*pb.SingleAccommodation {
 	var converted []*pb.SingleAccommodation
 
 	for _, entity := range accommodations {
-		newRes := service.ConvertToGrpc(&entity)
+		newRes := ConvertToGrpc(&entity)
 		converted = append(converted, newRes)
 	}
 
 	return converted
 }
 
-func (service *AccommodationService) ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation {
+func ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation {
+	var allAppointments []*pb.AppointmentResponse
+
+	for _, entity := range accommodation.Appointments {
+		appointment := ConvertToGrpcAppointment(entity)
+		allAppointments = append(allAppointments, appointment)
+	}
 
 	res := pb.SingleAccommodation{
 		Id:        accommodation.Id.Hex(),
@@ -65,7 +167,25 @@ func (service *AccommodationService) ConvertToGrpc(accommodation *domain.Accommo
 			Country: accommodation.Address.Country,
 			Street:  accommodation.Address.Street,
 		},
+		FreeAppointments: allAppointments,
 	}
 
 	return &res
+}
+
+func ConvertToGrpcAppointment(appointment domain.Appointment) *pb.AppointmentResponse {
+	interval := ConvertToGrpcInterval(appointment.Interval)
+
+	return &pb.AppointmentResponse{
+		Interval: interval,
+		Price:    appointment.Price,
+	}
+}
+
+func ConvertToGrpcInterval(interval domain.DateInterval) *pb.SingleDateInterval {
+
+	return &pb.SingleDateInterval{
+		DateFrom: interval.DateFrom.Format(time.DateOnly),
+		DateTo:   interval.DateTo.Format(time.DateOnly),
+	}
 }
