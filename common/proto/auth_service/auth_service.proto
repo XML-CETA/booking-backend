@@ -30,4 +30,5 @@ message AuthorizeRequest {
 
 message AuthorizeResponse {
 	bool success = 1;
+	string userEmail = 2;
 }

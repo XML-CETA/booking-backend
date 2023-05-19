@@ -85,6 +85,22 @@ func (service *AccommodationService) UpdateAppointment(appointment domain.Update
 	return service.store.Update(*accommodation)
 }
 
+func (service *AccommodationService) ValidateReservation(accommodationId primitive.ObjectID, interval domain.DateInterval) error {
+	accommodation, err := service.store.GetById(accommodationId)
+	if err != nil {
+		return err
+	}
+
+	return func(appointments []domain.Appointment, interval domain.DateInterval) error {
+		for _, entity := range appointments {
+			if isExactOverlap(interval, entity.Interval) {
+				return nil
+			}
+		}
+		return errors.New("No appointment with this interval exists")
+	} (accommodation.Appointments, interval)
+}
+
 func RemoveOldAppointment(oldAppointment domain.CreateAppointment, appointments []domain.Appointment) ([]domain.Appointment, error) {
 	for i, entity := range appointments {
 		if isExactOverlap(oldAppointment.Interval, entity.Interval) {
@@ -96,10 +112,7 @@ func RemoveOldAppointment(oldAppointment domain.CreateAppointment, appointments 
 }
 
 func isExactOverlap(interval, accInterval domain.DateInterval) bool {
-	if interval.DateFrom == accInterval.DateFrom && interval.DateTo == accInterval.DateTo {
-		return true
-	}
-	return false
+	return interval.DateFrom == accInterval.DateFrom && interval.DateTo == accInterval.DateTo
 }
 
 func HasOverlap(appointment domain.CreateAppointment, accAppointments []domain.Appointment) error {

@@ -25,15 +25,12 @@ func NewReservationHandler(service *application.ReservationService) *Reservation
 }
 
 func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationCreateRequest) (*pb.ReservationCreateResponse, error) {
-	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
-	md, _ := metadata.FromIncomingContext(ctx)
-	_, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: "HOST"})
-
+	user , err := Authorize(ctx, "REGULAR")
 	if err != nil {
 		return nil, err
 	}
 
-	newReservation := domain.MakeReservation(request.Accommodation, request.Guests, request.Offer, request.DateFrom, request.DateTo)
+	newReservation := domain.MakeReservation(request.Guests, request.Accommodation, user, request.DateFrom, request.DateTo)
 
 	err = h.service.CreateReservation(newReservation)
 	if err != nil {
@@ -55,4 +52,29 @@ func (h ReservationHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 	return &pb.GetAllResponse{
 		Reservations: h.service.ConvertToGrpcList(reservations),
 	}, nil
+}
+
+func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
+	user, err := Authorize(ctx, "REGULAR")
+	if err != nil {
+		return nil, err
+	}
+
+	err = h.service.Delete(request.Id, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteReservationResponse{
+		Message: "Successfully deleted",
+	}, nil
+}
+
+
+func Authorize(ctx context.Context, roleGuard string) (string, error) {
+	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
+	md, _ := metadata.FromIncomingContext(ctx)
+	user , err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
+
+	return user.UserEmail, err
 }

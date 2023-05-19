@@ -12,18 +12,18 @@ const (
 
 type Reservation struct{
 	Id primitive.ObjectID `bson:"_id,omitempty"`
-	Accommodation int32
-	Offer int32
+	Accommodation string
+	User string
 	DateFrom string
 	DateTo string
 	Guests int32
 	Status Status
 }
 
-func MakeReservation(accommodation, offer, guests int32, dateFrom, dateTo string) Reservation {
+func MakeReservation(guests int32, accommodation, user, dateFrom, dateTo string) Reservation {
 	return Reservation{
 		Accommodation:  accommodation,
-		Offer: offer,
+		User: user,
 		Guests: guests,
 		DateFrom: dateFrom,
 		DateTo: dateTo,

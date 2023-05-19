@@ -8,6 +8,8 @@ import (
 	"booking-backend/accommodation_service/domain"
 
 	pb "booking-backend/common/proto/accommodation_service"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AccommodationHandler struct {
@@ -119,3 +121,26 @@ func (handler *AccommodationHandler) UpdateAppointment(ctx context.Context, requ
 		Data: fmt.Sprintf("Succesfully updated!"),
 	}, nil
 }
+
+func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, request *pb.ValidateReservationRequest) (*pb.ValidateReservationResponse, error) {
+	id, err := primitive.ObjectIDFromHex(request.Accommodation)
+	if err != nil {
+		return nil, err
+	}
+
+	interval, err := domain.StringInvervalToDate(request.DateFrom, request.DateTo)
+	if err != nil {
+		return nil, err
+	}
+
+	err = handler.service.ValidateReservation(id, interval)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ValidateReservationResponse{
+		Success: true,
+	}, nil
+}
+
+
