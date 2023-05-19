@@ -1,9 +1,14 @@
 package application
 
 import (
+	"booking-backend/common/clients"
+	"booking-backend/common/proto/accommodation_service"
 	pb "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/domain"
+	"booking-backend/reservation-service/startup/config"
+	"context"
 	"errors"
+	"fmt"
 )
 
 type ReservationService struct {
@@ -23,8 +28,20 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 		return errors.New("Could not create, an active reservation with the same interval already exists")
 	}
 
-	// TODO: ask accommodation for status
+	// TODO: Ask accommodation for status, can use validate reservation method
 	reservation.Status = domain.Reserved
+
+	accommodation := getAccommodationClient()
+
+	_, err = accommodation.ValidateReservation(context.Background(), &accommodation_service.ValidateReservationRequest{
+		Accommodation: reservation.Accommodation,
+		DateFrom: reservation.DateFrom,
+		DateTo: reservation.DateTo,
+	})
+
+	if err != nil {
+		return err
+	}
 
 	return service.store.CreateReservation(reservation)
 }
@@ -51,4 +68,8 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 	}
 
 	return converted
+}
+
+func getAccommodationClient() accommodation_service.AccommodationServiceClient {
+	return clients.NewAccommodationClient(fmt.Sprintf("%s:%s", config.NewConfig().AccommodationServiceHost, config.NewConfig().AccommodationServicePort))
 }
