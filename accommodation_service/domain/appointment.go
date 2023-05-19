@@ -89,3 +89,20 @@ func StringToDateInterval(interval *pb.SingleDateInterval) (DateInterval, error)
 		DateTo:   dateTo,
 	}, nil
 }
+
+func StringInvervalToDate(dateFromString, dateToString string) (DateInterval, error) {
+	dateFrom, err := time.Parse(time.DateOnly, dateFromString)
+	if err != nil {
+		return DateInterval{}, err
+	}
+
+	dateTo, err := time.Parse(time.DateOnly, dateToString)
+	if err != nil {
+		return DateInterval{}, err
+	}
+
+	return DateInterval{
+		DateFrom: dateFrom,
+		DateTo:   dateTo,
+	}, nil
+}

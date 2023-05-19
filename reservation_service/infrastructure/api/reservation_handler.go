@@ -27,13 +27,13 @@ func NewReservationHandler(service *application.ReservationService) *Reservation
 func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationCreateRequest) (*pb.ReservationCreateResponse, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
-	_, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: "HOST"})
+	user , err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: "REGULAR"})
 
 	if err != nil {
 		return nil, err
 	}
 
-	newReservation := domain.MakeReservation(request.Accommodation, request.Guests, request.Offer, request.DateFrom, request.DateTo)
+	newReservation := domain.MakeReservation(request.Guests, request.Accommodation, user.UserEmail, request.DateFrom, request.DateTo)
 
 	err = h.service.CreateReservation(newReservation)
 	if err != nil {

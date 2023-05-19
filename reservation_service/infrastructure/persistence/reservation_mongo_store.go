@@ -3,7 +3,6 @@ package persistence
 import (
 	"booking-backend/reservation-service/domain"
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,19 +24,18 @@ func NewReservationMongoDBStore(client *mongo.Client) domain.ReservationStore {
 }
 
 func (repo *ReservationMongoDBStore) CreateReservation(reservation domain.Reservation) (error) {
-	result, err := repo.reservations.InsertOne(context.Background(), reservation)
-
-	log.Println("Inserted with id: ", result.InsertedID)
+	_, err := repo.reservations.InsertOne(context.Background(), reservation)
 
 	return err
 }
 
-func (repo *ReservationMongoDBStore) GetFirstByDates(accommodation int32, dateFrom, dateTo string) (domain.Reservation, error) {
+func (repo *ReservationMongoDBStore) GetFirstActive(accommodation string, dateFrom, dateTo string) (domain.Reservation, error) {
 
 	filter :=bson.D{
 		{ Key: "accommodation", Value: accommodation },
 		{ Key: "datefrom", Value: dateFrom },
 		{ Key: "dateto", Value: dateTo },
+		{ Key: "status", Value: domain.Reserved },
 	}
 
 	var result domain.Reservation

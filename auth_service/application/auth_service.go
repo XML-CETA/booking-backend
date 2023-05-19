@@ -57,26 +57,26 @@ func (service *AuthService) generateJwt(user *users_service.User) (string, error
 	return token, err
 }
 
-func (service *AuthService) Authorize(ctx context.Context, roleguard string) (error) {
+func (service *AuthService) Authorize(ctx context.Context, roleguard string) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	header := md.Get("authorization")
 
 	if len(header) == 0 {
-		return errors.New("No authorization header")
+		return "", errors.New("No authorization header")
 	}
 
 	bearer := header[0]
 
 	token, claims := service.parseJwt(bearer)
 	if !token.Valid {
-		return errors.New("Invalid token")
+		return "", errors.New("Invalid token")
 	}
 
 	if claims.CustomClaims["role"] != roleguard {
-		return errors.New("You are unauthorized for this endpoint")
+		return "", errors.New("You are unauthorized for this endpoint")
 	}
 
-	return nil
+	return claims.CustomClaims["email"], nil
 }
 
 func (service *AuthService) parseJwt(authorizationHeader string) (*jwt.Token, *config.Claims) {

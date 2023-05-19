@@ -17,15 +17,14 @@ func NewReservationService(store domain.ReservationStore) *ReservationService {
 }
 
 func (service *ReservationService) CreateReservation(reservation domain.Reservation) error {
-	reservation.Status = domain.Reserved
-
-	_, err := service.store.GetFirstByDates(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+	_, err := service.store.GetFirstActive(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
 	if err == nil {
-		return errors.New("Could not create, reservation with the same interval already exists")
+		return errors.New("Could not create, an active reservation with the same interval already exists")
 	}
 
 	// TODO: ask accommodation for status
+	reservation.Status = domain.Reserved
 
 	return service.store.CreateReservation(reservation)
 }
@@ -44,7 +43,7 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 			DateFrom:      entity.DateFrom,
 			DateTo:        entity.DateTo,
 			Guests:        entity.Guests,
-			Offer:         entity.Offer,
+			User:		   entity.User,
 			Status:        int32(entity.Status),
 		}
 

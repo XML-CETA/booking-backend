@@ -44,8 +44,9 @@ service AccommodationService{
         body: "*"
       };
     }
+    rpc ValidateReservation(ValidateReservationRequest) returns (ValidateReservationResponse) {}
   }
-  
+
 message SingleDateInterval{
   string dateFrom = 1;
   string dateTo = 2;
@@ -107,4 +108,14 @@ repeated SingleAccommodation accommodations = 1;
 
 message AccommodationIdRequest{
   string id = 1;
+}
+
+message ValidateReservationRequest {
+	string accommodation = 1;
+	string dateFrom = 2;
+	string dateTo = 3;
+}
+
+message ValidateReservationResponse {
+	bool success = 1;
 }
