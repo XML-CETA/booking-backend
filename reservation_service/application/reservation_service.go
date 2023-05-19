@@ -9,6 +9,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ReservationService struct {
@@ -31,13 +33,7 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 	// TODO: Ask accommodation for status, can use validate reservation method
 	reservation.Status = domain.Reserved
 
-	accommodation := getAccommodationClient()
-
-	_, err = accommodation.ValidateReservation(context.Background(), &accommodation_service.ValidateReservationRequest{
-		Accommodation: reservation.Accommodation,
-		DateFrom: reservation.DateFrom,
-		DateTo: reservation.DateTo,
-	})
+	_, err = validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
 	if err != nil {
 		return err
@@ -48,6 +44,16 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 
 func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
 	return service.store.GetAll()
+}
+
+func (service *ReservationService) Delete(reservation string) error {
+	id, err := primitive.ObjectIDFromHex(reservation)
+	if err != nil {
+		return err
+	}
+
+	//TODO: if status active then check dates
+	return service.store.Delete(id)
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -72,4 +78,14 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
 	return clients.NewAccommodationClient(fmt.Sprintf("%s:%s", config.NewConfig().AccommodationServiceHost, config.NewConfig().AccommodationServicePort))
+}
+
+func validateReservation(accommodationId, dateFrom, dateTo string) (*accommodation_service.ValidateReservationResponse, error) {
+	accommodation := getAccommodationClient()
+
+	return accommodation.ValidateReservation(context.Background(), &accommodation_service.ValidateReservationRequest{
+		Accommodation: accommodationId,
+		DateFrom: dateFrom,
+		DateTo: dateTo,
+	})
 }

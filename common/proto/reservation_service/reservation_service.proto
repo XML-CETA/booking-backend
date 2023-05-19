@@ -16,6 +16,11 @@ service ReservationService {
 		  get: "/reservations"
 		};
 	}
+  rpc Delete(DeleteReservationRequest) returns (DeleteReservationResponse) {
+		option (google.api.http) = {
+		  delete: "/reservations/{id}"
+		};
+	}
 }
 
 message ReservationCreateRequest {
@@ -44,4 +49,12 @@ message GetAllRequest {
 
 message GetAllResponse {
 	repeated Reservation reservations = 1;
+}
+
+message DeleteReservationRequest {
+	string id = 1;
+}
+
+message DeleteReservationResponse {
+	string message = 1;
 }

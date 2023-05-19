@@ -56,3 +56,14 @@ func (h ReservationHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 		Reservations: h.service.ConvertToGrpcList(reservations),
 	}, nil
 }
+
+func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
+	err := h.service.Delete(request.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteReservationResponse{
+		Message: "Successfully deleted",
+	}, nil
+}
