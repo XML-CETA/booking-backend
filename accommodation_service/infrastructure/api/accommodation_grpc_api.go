@@ -90,6 +90,17 @@ func (handler *AccommodationHandler) Delete(ctx context.Context, request *pb.Acc
 	}, nil
 }
 
+func (handler *AccommodationHandler) SearchAccommodations(ctx context.Context, request *pb.SearchAccommodationsRequest) (*pb.SearchAccommodationsResponse, error) {
+	accommodations, err := handler.service.SearchAccommodations(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.SearchAccommodationsResponse{
+		Accommodations: accommodations,
+	}, err
+}
+
 func (handler *AccommodationHandler) CreateAppointment(ctx context.Context, request *pb.SingleAppointment) (*pb.Response, error) {
 	createAppointment, err := domain.MakeCreateAppointment(request)
 	if err != nil {
@@ -142,5 +153,3 @@ func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, re
 		Success: true,
 	}, nil
 }
-
-

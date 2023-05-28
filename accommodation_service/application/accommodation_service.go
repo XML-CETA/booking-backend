@@ -53,6 +53,27 @@ func (service *AccommodationService) Delete(id string) error {
 	return service.store.Delete(objId)
 }
 
+func (service *AccommodationService) SearchAccommodations(request *pb.SearchAccommodationsRequest) ([]*pb.SingleAccommodation, error) {
+	accommodations, err := service.store.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	filteredAccommodations := make([]*pb.SingleAccommodation, 0)
+	for _, accommodation := range accommodations {
+		if accommodation.MinGuests <= request.GuestsNumber && accommodation.MaxGuests >= request.GuestsNumber && accommodation.Address.Country == request.Country && accommodation.Address.City == request.City {
+			for _, appointment := range accommodation.Appointments {
+				interval, _ := domain.StringToDateInterval(request.Interval)
+				if isExactOverlap(appointment.Interval, interval) {
+					filteredAccommodations = append(filteredAccommodations, ConvertToGrpc(&accommodation))
+					break
+				}
+			}
+		}
+	}
+	return filteredAccommodations, nil
+}
+
 func (service *AccommodationService) AddAppointment(appointment domain.CreateAppointment) error {
 	accommodation, err := service.store.GetById(appointment.Id)
 	if err != nil {
@@ -98,7 +119,7 @@ func (service *AccommodationService) ValidateReservation(accommodationId primiti
 			}
 		}
 		return errors.New("No appointment with this interval exists")
-	} (accommodation.Appointments, interval)
+	}(accommodation.Appointments, interval)
 }
 
 func RemoveOldAppointment(oldAppointment domain.CreateAppointment, appointments []domain.Appointment) ([]domain.Appointment, error) {
