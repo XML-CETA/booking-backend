@@ -20,6 +20,12 @@ message User {
   string role = 6;
 }
 
+message Rating{
+  int32 rating = 1;
+  string ratedBy = 2;
+  string ratedHost = 3;
+}
+
 service UsersService {
   rpc CreateUser(CreateRequest) returns (CreateResponse) {
     option (google.api.http) = {
@@ -39,6 +45,12 @@ service UsersService {
     };
   }
   rpc LoginCheck(LoginRequest) returns (LoginResponse) {
+  }
+  rpc RateUser(RateUserRequest) returns (RateUserResponse){
+    option(google.api.http)={
+      post: "/user/rate"
+      body:"*"
+    };
   }
 }
 
@@ -73,4 +85,11 @@ message LoginRequest {
 
 message LoginResponse {
   User user = 1;
+}
+
+message RateUserRequest{
+  Rating rating = 1;
+}
+message RateUserResponse{
+  string message = 1;
 }

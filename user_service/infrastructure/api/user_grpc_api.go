@@ -20,6 +20,20 @@ func NewUserHandler(service *application.UserService) *UserHandler {
 	}
 }
 
+func (h UserHandler) RateUser(ctx context.Context, request *pb.RateUserRequest) (*pb.RateUserResponse, error) {
+	rating := domain.MakeRating(request.Rating.Rating, request.Rating.RatedBy, request.Rating.RatedHost)
+	err := h.service.RateUser(rating)
+	if err != nil {
+		return &pb.RateUserResponse{
+			Message: fmt.Sprintf(err.Error()),
+		}, err
+	}
+
+	return &pb.RateUserResponse{
+		Message: fmt.Sprintf("User is succesfully rated"),
+	}, nil
+}
+
 func (h UserHandler) CreateUser(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
 	reqUser := request.User
 	u := domain.User{
