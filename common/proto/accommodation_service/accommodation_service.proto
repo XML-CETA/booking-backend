@@ -90,6 +90,7 @@ int32 maxGuests = 5;
 string name = 6;
 AccommodationAddress address = 7;
 repeated AppointmentResponse freeAppointments = 8;
+string host = 9;
 }
 
 message AccommodationCreateRequest {
