@@ -2,6 +2,7 @@ package application
 
 import (
 	"booking-backend/common/clients"
+	"booking-backend/common/messaging"
 	"booking-backend/common/proto/accommodation_service"
 	pb "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/domain"
@@ -16,11 +17,13 @@ import (
 
 type ReservationService struct {
 	store domain.ReservationStore
+  prominentHostPublisher messaging.PublisherModel
 }
 
-func NewReservationService(store domain.ReservationStore) *ReservationService {
+func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *ReservationService {
 	return &ReservationService{
 		store: store,
+    prominentHostPublisher: prominentHostPublisher,
 	}
 }
 

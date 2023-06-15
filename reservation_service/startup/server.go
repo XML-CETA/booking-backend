@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"booking-backend/common/messaging"
 	reservationProto "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/application"
 	"booking-backend/reservation-service/domain"
@@ -27,9 +28,12 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
+
 	reservationStore := server.initReservationStore(mongoClient)
 
-	reservationService := server.initReservationService(reservationStore)
+  publisher := server.initPublisher(server.config.ProminentHostSubject)
+
+	reservationService := server.initReservationService(reservationStore, publisher)
 
 	reservationHandler := server.initReservationHandler(reservationService)
 
@@ -49,8 +53,8 @@ func (server *Server) initReservationStore(client *mongo.Client) domain.Reservat
 	return store
 }
 
-func (server *Server) initReservationService(store domain.ReservationStore) *application.ReservationService {
-	return application.NewReservationService(store)
+func (server *Server) initReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *application.ReservationService {
+	return application.NewReservationService(store, prominentHostPublisher)
 }
 
 func (server *Server) initReservationHandler(service *application.ReservationService) *api.ReservationHandler {
@@ -67,4 +71,14 @@ func (server *Server) startGrpcServer(productHandler *api.ReservationHandler) {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+func (server *Server) initPublisher(subject string) messaging.PublisherModel {
+	publisher, err := messaging.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
 }
