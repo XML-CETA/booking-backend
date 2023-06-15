@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "booking-backend/common/proto/rating_service";
+
+import "google/api/annotations.proto";
+
+service RatingService {
+    rpc Create(RatingAccommodationCreateRequest) returns (CreateResponse) {
+      option (google.api.http) = {
+        post: "/ratings/accommodation"
+        body: "*"
+      };
+    }
+}
+
+
+message RatingAccommodationCreateRequest {
+    string accommodation = 1;
+    string user = 2;
+    int32 rate = 3;
+}
+
+message CreateResponse {
+    string data = 1;
+}
+  
