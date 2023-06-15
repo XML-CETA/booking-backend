@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"booking-backend/common/messaging"
 	usersProto "booking-backend/common/proto/user_service"
 	"booking-backend/user-service/application"
 	"booking-backend/user-service/domain"
@@ -14,6 +15,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+)
+
+const (
+  QueueGroup = "user_service"
 )
 
 type Server struct {
@@ -28,10 +33,14 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
+
 	userStore := server.initUserStore(mongoClient)
+
 	ratingStore := server.initRatingStore(mongoClient)
 
-	userService := server.initUserService(userStore, ratingStore)
+  subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
+
+	userService := server.initUserService(userStore, ratingStore, subscriber)
 
 	userHandler := server.initUserHandler(userService)
 
@@ -56,8 +65,14 @@ func (server *Server) initRatingStore(client *mongo.Client) domain.RatingStore {
 	return ratingStore
 }
 
-func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore) *application.UserService {
-	return application.NewUserService(store, ratingStore)
+func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel) *application.UserService {
+  service, err := application.NewUserService(store, ratingStore, subscriber)
+
+  if err != nil {
+    log.Fatalf("Failed to start service %v", err)
+  }
+
+  return service
 }
 
 func (server *Server) initUserHandler(service *application.UserService) *api.UserHandler {
@@ -74,4 +89,14 @@ func (server *Server) startGrpcServer(userHandler *api.UserHandler) {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) messaging.SubscriberModel {
+	subscriber, err := messaging.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
 }
