@@ -29,8 +29,9 @@ func NewServer(config *config.Config) *Server {
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	userStore := server.initUserStore(mongoClient)
+	ratingStore := server.initRatingStore(mongoClient)
 
-	userService := server.initUserService(userStore)
+	userService := server.initUserService(userStore, ratingStore)
 
 	userHandler := server.initUserHandler(userService)
 
@@ -50,8 +51,13 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	return store
 }
 
-func (server *Server) initUserService(store domain.UserStore) *application.UserService {
-	return application.NewUserService(store)
+func (server *Server) initRatingStore(client *mongo.Client) domain.RatingStore {
+	ratingStore := persistence.NewRatingMongoDBStore(client)
+	return ratingStore
+}
+
+func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore) *application.UserService {
+	return application.NewUserService(store, ratingStore)
 }
 
 func (server *Server) initUserHandler(service *application.UserService) *api.UserHandler {

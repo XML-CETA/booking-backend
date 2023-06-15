@@ -8,12 +8,14 @@ import (
 )
 
 type UserService struct {
-	store domain.UserStore
+	store       domain.UserStore
+	ratingStore domain.RatingStore
 }
 
-func NewUserService(store domain.UserStore) *UserService {
+func NewUserService(store domain.UserStore, ratingStore domain.RatingStore) *UserService {
 	return &UserService{
-		store: store,
+		store:       store,
+		ratingStore: ratingStore,
 	}
 }
 
@@ -35,6 +37,10 @@ func (service *UserService) Update(user domain.User) error {
 
 func (service *UserService) GetOne(email string) (domain.User, error) {
 	return service.store.GetOne(email)
+}
+
+func (service *UserService) RateUser(rating domain.Rating) error {
+	return service.ratingStore.Create(rating)
 }
 
 func (service *UserService) LoginCheck(email string, password string) (pb.User, error) {

@@ -15,3 +15,17 @@ type User struct {
 	Address  Address `json:"address"`
 	Role     string  `json:"role"`
 }
+
+type Rating struct {
+	Rating    int32  `json:"rating"`
+	RatedBy   string `json:"ratedBy"`
+	RatedHost string `json:"ratedHost"`
+}
+
+func MakeRating(rating int32, ratedBy, ratedHost string) Rating {
+	return Rating{
+		Rating:    rating,
+		RatedBy:   ratedBy,
+		RatedHost: ratedHost,
+	}
+}
