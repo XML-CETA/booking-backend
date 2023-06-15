@@ -13,3 +13,8 @@ func NewRatingService(accommodationStore domain.RatingAccommodationStore) *Ratin
 		rateAccommodationStore: accommodationStore,
 	}
 }
+
+func (service *RatingService) GetRateByUserAndAccommodation(userEmail string, accommodationId string) (domain.RatingAccommodation, error) {
+	rate, err := service.rateAccommodationStore.GetById(objId)
+	return grpcAccommodation, err
+}
