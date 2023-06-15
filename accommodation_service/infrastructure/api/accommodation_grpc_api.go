@@ -6,10 +6,14 @@ import (
 
 	"booking-backend/accommodation_service/application"
 	"booking-backend/accommodation_service/domain"
+	"booking-backend/accommodation_service/startup/config"
 
+	"booking-backend/common/clients"
 	pb "booking-backend/common/proto/accommodation_service"
+	"booking-backend/common/proto/auth_service"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc/metadata"
 )
 
 type AccommodationHandler struct {
@@ -46,10 +50,14 @@ func (handler *AccommodationHandler) GetById(ctx context.Context, request *pb.Ac
 }
 
 func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.Response, error) {
+	user , err := Authorize(ctx, "HOST")
+	if err != nil {
+		return nil, err
+	}
 
-	newAccommodation := domain.MakeCreateAccommodation(request)
+	newAccommodation := domain.MakeCreateAccommodation(request, user)
 
-	err := handler.service.Create(newAccommodation)
+	err = handler.service.Create(newAccommodation)
 	if err != nil {
 		return nil, err
 	}
@@ -152,4 +160,13 @@ func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, re
 	return &pb.ValidateReservationResponse{
 		Success: true,
 	}, nil
+
+}
+
+func Authorize(ctx context.Context, roleGuard string) (string, error) {
+	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
+	md, _ := metadata.FromIncomingContext(ctx)
+	user , err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
+
+	return user.UserEmail, err
 }

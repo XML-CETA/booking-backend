@@ -14,6 +14,7 @@ type User struct {
 	Password string  `json:"password"`
 	Address  Address `json:"address"`
 	Role     string  `json:"role"`
+  IsProminent bool
 }
 
 type Rating struct {

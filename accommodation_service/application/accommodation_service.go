@@ -202,6 +202,7 @@ func ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation 
 			Street:  accommodation.Address.Street,
 		},
 		FreeAppointments: allAppointments,
+    Host: accommodation.Host,
 	}
 
 	return &res

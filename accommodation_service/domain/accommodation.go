@@ -10,11 +10,12 @@ type Accommodation struct {
 	Id           primitive.ObjectID   `json:"id,omitempty"  bson:"_id,omitempty"`
 	Longitude    float64              `json:"longitude" bson:"longitude"`
 	Latitude     float64              `json:"latitude" bson:"latitude"`
-	Address      AccommodationAddress `json:"address" bson"address"`
+  Address      AccommodationAddress `json:"address" bson:"address"`
 	MinGuests    int32                `json:"minGuests" bson:"minGuests"`
 	MaxGuests    int32                `json:"maxGuests" bson:"maxGuests"`
 	Name         string               `json:"name" bson:"name"`
 	Appointments []Appointment        `json:"appointments" bson:"appointments"`
+  Host string `json:"host"`
 }
 
 type AccommodationAddress struct {
@@ -24,7 +25,7 @@ type AccommodationAddress struct {
 	Country string `json:"country" bson:"country"`
 }
 
-func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest) Accommodation {
+func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest, host string) Accommodation {
 	address := AccommodationAddress{
 		Street:  accommodation.Address.Street,
 		Number:  accommodation.Address.Number,
@@ -39,6 +40,7 @@ func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest) Accom
 		MaxGuests: accommodation.MaxGuests,
 		Name:      accommodation.Name,
 		Address:   address,
+    Host: host,
 	}
 }
 
