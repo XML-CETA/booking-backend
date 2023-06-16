@@ -51,7 +51,8 @@ service AccommodationService{
       };
     }
     rpc ValidateReservation(ValidateReservationRequest) returns (ValidateReservationResponse) {}
-  }
+    rpc IsAutomaticConfirmation(AccommodationIdRequest) returns (IsAutomaticConfirmationResponse){}
+}
 
 message SingleDateInterval{
   string dateFrom = 1;
@@ -91,6 +92,12 @@ string name = 6;
 AccommodationAddress address = 7;
 repeated AppointmentResponse freeAppointments = 8;
 string host = 9;
+ConfirmationType confirmationType = 10;
+}
+
+enum ConfirmationType {
+  Automatic = 0;
+  Manual = 1;
 }
 
 message AccommodationCreateRequest {
@@ -100,6 +107,7 @@ message AccommodationCreateRequest {
   int32 maxGuests = 4;
   string name = 5;
   AccommodationAddress address = 6;
+  ConfirmationType confirmationType = 7;
 }
 
 message Response {
@@ -126,6 +134,10 @@ message SearchAccommodationsResponse{
 
 message AccommodationIdRequest{
   string id = 1;
+}
+
+message IsAutomaticConfirmationResponse {
+  bool isAutomaticConfirmation = 1;
 }
 
 message ValidateReservationRequest {
