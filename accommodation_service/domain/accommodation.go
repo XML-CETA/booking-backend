@@ -42,13 +42,14 @@ func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest, host 
 	}
 
 	return Accommodation{
-		Longitude: accommodation.Longitude,
-		Latitude:  accommodation.Latitude,
-		MinGuests: accommodation.MinGuests,
-		MaxGuests: accommodation.MaxGuests,
-		Name:      accommodation.Name,
-		Address:   address,
-		Host:      host,
+		Longitude:        accommodation.Longitude,
+		Latitude:         accommodation.Latitude,
+		MinGuests:        accommodation.MinGuests,
+		MaxGuests:        accommodation.MaxGuests,
+		Name:             accommodation.Name,
+		Address:          address,
+		Host:             host,
+		ConfirmationType: ConfirmationType(accommodation.ConfirmationType),
 	}
 }
 

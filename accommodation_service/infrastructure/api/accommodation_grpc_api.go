@@ -50,7 +50,7 @@ func (handler *AccommodationHandler) GetById(ctx context.Context, request *pb.Ac
 }
 
 func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.Response, error) {
-	user , err := Authorize(ctx, "HOST")
+	user, err := Authorize(ctx, "HOST")
 	if err != nil {
 		return nil, err
 	}
@@ -152,21 +152,33 @@ func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, re
 		return nil, err
 	}
 
-  host, err := handler.service.ValidateReservation(id, interval)
+	host, err := handler.service.ValidateReservation(id, interval)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.ValidateReservationResponse{
 		Success: true,
-    Host: host,
+		Host:    host,
 	}, nil
+}
+
+func (handler *AccommodationHandler) IsAutomaticConfirmation(ctx context.Context, request *pb.AccommodationIdRequest) (*pb.IsAutomaticConfirmationResponse, error) {
+	id, err := primitive.ObjectIDFromHex(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	isAutomatic, err := handler.service.IsAutomaticConfirmation(id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.IsAutomaticConfirmationResponse{IsAutomaticConfirmation: isAutomatic}, nil
 }
 
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
-	user , err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
+	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
 	return user.UserEmail, err
 }

@@ -122,6 +122,17 @@ func (service *AccommodationService) ValidateReservation(accommodationId primiti
 	}(accommodation.Appointments, interval)
 }
 
+func (service *AccommodationService) IsAutomaticConfirmation(accommodationId primitive.ObjectID) (bool, error) {
+	accommodation, err := service.store.GetById(accommodationId)
+	if err != nil {
+		return false, err
+	}
+	if accommodation.ConfirmationType == domain.Automatic {
+		return true, nil
+	}
+	return false, nil
+}
+
 func RemoveOldAppointment(oldAppointment domain.CreateAppointment, appointments []domain.Appointment) ([]domain.Appointment, error) {
 	for i, entity := range appointments {
 		if isExactOverlap(oldAppointment.Interval, entity.Interval) {

@@ -16,14 +16,14 @@ import (
 )
 
 type ReservationService struct {
-	store domain.ReservationStore
-  prominentHostPublisher messaging.PublisherModel
+	store                  domain.ReservationStore
+	prominentHostPublisher messaging.PublisherModel
 }
 
 func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *ReservationService {
 	return &ReservationService{
-		store: store,
-    prominentHostPublisher: prominentHostPublisher,
+		store:                  store,
+		prominentHostPublisher: prominentHostPublisher,
 	}
 }
 
@@ -34,13 +34,13 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 		return errors.New("Could not create, an active reservation with the same interval already exists")
 	}
 
-	// TODO: Ask accommodation for status, can use validate reservation method
-	reservation.Status = domain.Reserved
+	response, err := validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
-  response, err := validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
-
-  reservation.Host = response.Host
-
+	reservation.Host = response.Host
+	isAutomatic, err := isAutomaticConfirmation(reservation.Accommodation)
+	if isAutomatic.IsAutomaticConfirmation {
+		reservation.Status = domain.Reserved
+	}
 	if err != nil {
 		return err
 	}
@@ -81,9 +81,9 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 			DateFrom:      entity.DateFrom,
 			DateTo:        entity.DateTo,
 			Guests:        entity.Guests,
-			User:		       entity.User,
+			User:          entity.User,
 			Status:        int32(entity.Status),
-      Host:          entity.Host,
+			Host:          entity.Host,
 		}
 
 		converted = append(converted, &newRes)
@@ -93,21 +93,21 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 }
 
 func (service *ReservationService) getCancelRate(host string) (float32, error) {
-  nonCanceled, err := service.store.CountNonCanceled(host)
-  if err != nil {
-    return 0.0, err
-  }
+	nonCanceled, err := service.store.CountNonCanceled(host)
+	if err != nil {
+		return 0.0, err
+	}
 
-  canceled, err := service.store.CountCanceled(host)
-  if err != nil {
-    return 0.0, err
-  }
+	canceled, err := service.store.CountCanceled(host)
+	if err != nil {
+		return 0.0, err
+	}
 
-  return float32(nonCanceled/canceled), nil
+	return float32(nonCanceled / canceled), nil
 }
 
 func (service *ReservationService) getExpiredCount(host string) (int32, error) {
-  return service.store.CountExpired(host)
+	return service.store.CountExpired(host)
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
@@ -119,8 +119,15 @@ func validateReservation(accommodationId, dateFrom, dateTo string) (*accommodati
 
 	return accommodation.ValidateReservation(context.Background(), &accommodation_service.ValidateReservationRequest{
 		Accommodation: accommodationId,
-		DateFrom: dateFrom,
-		DateTo: dateTo,
+		DateFrom:      dateFrom,
+		DateTo:        dateTo,
+	})
+}
+
+func isAutomaticConfirmation(accommodationId string) (*accommodation_service.IsAutomaticConfirmationResponse, error) {
+	accommodation := getAccommodationClient()
+	return accommodation.IsAutomaticConfirmation(context.Background(), &accommodation_service.AccommodationIdRequest{
+		Id: accommodationId,
 	})
 }
 
@@ -137,4 +144,3 @@ func checkReservationDate(dateFrom string) bool {
 func canDeleteReservation(reservation domain.Reservation) bool {
 	return reservation.Status == domain.Reserved && checkReservationDate(reservation.DateFrom)
 }
-
