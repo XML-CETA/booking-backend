@@ -13,11 +13,13 @@ import (
 
 type RatingService struct {
 	rateAccommodationStore domain.RatingAccommodationStore
+	rateUserStore          domain.RatingUserStore
 }
 
-func NewRatingService(accommodationStore domain.RatingAccommodationStore) *RatingService {
+func NewRatingService(accommodationStore domain.RatingAccommodationStore, ratingUserStore domain.RatingUserStore) *RatingService {
 	return &RatingService{
 		rateAccommodationStore: accommodationStore,
+		rateUserStore:          ratingUserStore,
 	}
 }
 

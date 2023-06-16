@@ -28,12 +28,13 @@ func NewServer(config *config.Config) *Server {
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	ratingAccommodationStore := server.initRatingAccommodationStore(mongoClient)
+	ratingUserStore := server.initRatingUserStore(mongoClient)
 
-	reservationService := server.initRatingService(ratingAccommodationStore)
+	ratingService := server.initRatingService(ratingAccommodationStore, ratingUserStore)
 
-	reservationHandler := server.initRatingHandler(reservationService)
+	ratingHandler := server.initRatingHandler(ratingService)
 
-	server.startGrpcServer(reservationHandler)
+	server.startGrpcServer(ratingHandler)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {
@@ -49,8 +50,13 @@ func (server *Server) initRatingAccommodationStore(client *mongo.Client) domain.
 	return store
 }
 
-func (server *Server) initRatingService(store domain.RatingAccommodationStore) *application.RatingService {
-	return application.NewRatingService(store)
+func (server *Server) initRatingUserStore(client *mongo.Client) domain.RatingUserStore {
+	store := persistence.NewRatingUserMongoDBStore(client)
+	return store
+}
+
+func (server *Server) initRatingService(rateAccommodationStore domain.RatingAccommodationStore, rateUserStore domain.RatingUserStore) *application.RatingService {
+	return application.NewRatingService(rateAccommodationStore, rateUserStore)
 }
 
 func (server *Server) initRatingHandler(service *application.RatingService) *api.RatingHandler {

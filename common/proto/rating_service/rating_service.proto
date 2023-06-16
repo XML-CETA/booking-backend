@@ -11,6 +11,7 @@ service RatingService {
         body: "*"
       };
     }
+<<<<<<< HEAD
 
     rpc UpdateAccommodationRate(RatingAccommodationRequest) returns (RateResponse) {
       option (google.api.http) = {
@@ -36,8 +37,21 @@ service RatingService {
         get: "/ratings/accommodation/{id}/average"
       };
     }
+=======
+    rpc CreateUserRating(RateUserRequest) returns (CreateResponse){
+      option (google.api.http)= {
+        post: "/ratings/user"
+        body: "*"
+      };
+    }
+>>>>>>> 56fa5f4 (Implemented nats and rate user orchestratr)
 }
 
+message RateUserRequest{
+  string ratedUser = 1;
+  string ratedBy = 2;
+  int32 rate = 3;
+}
 
 message RatingAccommodationRequest {
     string accommodation = 1;

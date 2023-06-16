@@ -39,3 +39,10 @@ func RateToGrpcRate(rate RatingAccommodation) pb.RateAccommodationResponse {
 		Rate: rate.Rate,
 	}
 }
+
+type RatingUser struct {
+	RatedUser string
+	RatedBy   string
+	Date      string
+	Rate      int32
+}
