@@ -2,6 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v3.12.4
+
 // source: reservation_service/reservation_service.proto
 
 package reservation_service

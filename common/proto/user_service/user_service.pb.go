@@ -2,6 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v3.12.4
+
 // source: user_service/user_service.proto
 
 package users_service

@@ -2,6 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.12.4
+
 // source: auth_service/auth_service.proto
 
 package auth_service

@@ -91,6 +91,12 @@ string name = 6;
 AccommodationAddress address = 7;
 repeated AppointmentResponse freeAppointments = 8;
 string host = 9;
+ConfirmationType confirmationType = 10;
+}
+
+enum ConfirmationType {
+  Automatic = 0;
+  Manual = 1;
 }
 
 message AccommodationCreateRequest {

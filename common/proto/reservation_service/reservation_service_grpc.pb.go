@@ -2,6 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.12.4
+
 // source: reservation_service/reservation_service.proto
 
 package reservation_service
