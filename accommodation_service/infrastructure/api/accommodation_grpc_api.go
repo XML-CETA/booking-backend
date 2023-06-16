@@ -152,15 +152,15 @@ func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, re
 		return nil, err
 	}
 
-	err = handler.service.ValidateReservation(id, interval)
+  host, err := handler.service.ValidateReservation(id, interval)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.ValidateReservationResponse{
 		Success: true,
+    Host: host,
 	}, nil
-
 }
 
 func Authorize(ctx context.Context, roleGuard string) (string, error) {

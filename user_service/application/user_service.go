@@ -2,7 +2,9 @@ package application
 
 import (
 	"errors"
+	"log"
 
+	"booking-backend/common/messaging"
 	pb "booking-backend/common/proto/user_service"
 	"booking-backend/user-service/domain"
 )
@@ -10,13 +12,25 @@ import (
 type UserService struct {
 	store       domain.UserStore
 	ratingStore domain.RatingStore
+  subscriber  messaging.SubscriberModel
 }
 
-func NewUserService(store domain.UserStore, ratingStore domain.RatingStore) *UserService {
-	return &UserService{
+func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel) (*UserService, error) {
+  service := &UserService{
 		store:       store,
 		ratingStore: ratingStore,
+    subscriber: subscriber,
 	}
+
+  err := service.subscriber.Subscribe(service.ProminentUser)
+
+  log.Printf("%v", err)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return service, nil
 }
 
 func (service *UserService) Create(user domain.User) error {
@@ -70,4 +84,8 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 		Role: user.Role,
 	}
 	return rpcUser
+}
+
+func (service *UserService) ProminentUser(message string) {
+  log.Print("HERE I AM " + message)
 }

@@ -70,9 +70,52 @@ func (repo *ReservationMongoDBStore) GetByIdAndUser(reservation primitive.Object
 	return result, err
 }
 
-func (repo *ReservationMongoDBStore) Delete(reservation primitive.ObjectID) error {
-	filter :=bson.D{{ Key: "_id", Value: reservation }}
+func (repo *ReservationMongoDBStore) Cancel(reservation primitive.ObjectID) error {
+	filter := bson.D{{ Key: "_id", Value: reservation }}
+  update := bson.D{{ Key: "status", Value: domain.Canceled }}
 
-	_, err := repo.reservations.DeleteOne(context.Background(), filter)
+	_, err := repo.reservations.UpdateOne(context.Background(), filter, update)
 	return err
+}
+
+func (repo *ReservationMongoDBStore) CountCanceled(host string) (int32, error) {
+	filterStatus := bson.D{{ Key: "status", Value: domain.Canceled }}
+  filter := makeStatusHostFilter(filterStatus, host)
+
+  return repo.countDocuments(filter)
+}
+
+func (repo *ReservationMongoDBStore) CountExpired(host string) (int32, error) {
+	filterStatus := bson.D{{ Key: "status", Value: domain.Expired }}
+  filter := makeStatusHostFilter(filterStatus, host)
+
+  return repo.countDocuments(filter)
+}
+
+func (repo *ReservationMongoDBStore) CountNonCanceled(host string) (int32, error) {
+  filterStatus := bson.D{{
+    Key :"status", Value : bson.D{{ Key: "$ne", Value: domain.Canceled }},
+  }}
+
+  filter := makeStatusHostFilter(filterStatus, host)
+
+  return repo.countDocuments(filter)
+}
+
+func (repo *ReservationMongoDBStore) countDocuments(filter primitive.D) (int32, error) {
+  count, err := repo.reservations.CountDocuments(context.Background(), filter)
+  if err != nil {
+    return 0, err
+  }
+
+  return int32(count), nil
+}
+
+func makeStatusHostFilter(filterStatus primitive.D, host string) primitive.D {
+  return bson.D{{
+    Key: "$and", Value: bson.A{
+      filterStatus,
+      bson.D{{ Key: "host", Value: host }},
+    },
+  }}
 }

@@ -2,6 +2,7 @@ package application
 
 import (
 	"booking-backend/common/clients"
+	"booking-backend/common/messaging"
 	"booking-backend/common/proto/accommodation_service"
 	pb "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/domain"
@@ -16,11 +17,13 @@ import (
 
 type ReservationService struct {
 	store domain.ReservationStore
+  prominentHostPublisher messaging.PublisherModel
 }
 
-func NewReservationService(store domain.ReservationStore) *ReservationService {
+func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *ReservationService {
 	return &ReservationService{
 		store: store,
+    prominentHostPublisher: prominentHostPublisher,
 	}
 }
 
@@ -34,7 +37,9 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 	// TODO: Ask accommodation for status, can use validate reservation method
 	reservation.Status = domain.Reserved
 
-	_, err = validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+  response, err := validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+
+  reservation.Host = response.Host
 
 	if err != nil {
 		return err
@@ -56,14 +61,14 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 	reservation, err := service.store.GetByIdAndUser(id, user)
 
 	if reservation.Status == domain.Waiting {
-		return service.store.Delete(id)
+		return service.store.Cancel(id)
 	}
 
 	if !canDeleteReservation(reservation) {
 		return errors.New("Can not delete, reservation starts in less then a day or is in progress")
 	}
 
-	return service.store.Delete(id)
+	return service.store.Cancel(id)
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -76,14 +81,33 @@ func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reser
 			DateFrom:      entity.DateFrom,
 			DateTo:        entity.DateTo,
 			Guests:        entity.Guests,
-			User:		   entity.User,
+			User:		       entity.User,
 			Status:        int32(entity.Status),
+      Host:          entity.Host,
 		}
 
 		converted = append(converted, &newRes)
 	}
 
 	return converted
+}
+
+func (service *ReservationService) getCancelRate(host string) (float32, error) {
+  nonCanceled, err := service.store.CountNonCanceled(host)
+  if err != nil {
+    return 0.0, err
+  }
+
+  canceled, err := service.store.CountCanceled(host)
+  if err != nil {
+    return 0.0, err
+  }
+
+  return float32(nonCanceled/canceled), nil
+}
+
+func (service *ReservationService) getExpiredCount(host string) (int32, error) {
+  return service.store.CountExpired(host)
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
@@ -113,3 +137,4 @@ func checkReservationDate(dateFrom string) bool {
 func canDeleteReservation(reservation domain.Reservation) bool {
 	return reservation.Status == domain.Reserved && checkReservationDate(reservation.DateFrom)
 }
+

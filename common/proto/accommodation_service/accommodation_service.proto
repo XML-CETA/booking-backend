@@ -136,4 +136,5 @@ message ValidateReservationRequest {
 
 message ValidateReservationResponse {
 	bool success = 1;
+  string host = 2;
 }
