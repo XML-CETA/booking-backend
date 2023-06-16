@@ -25,7 +25,7 @@ func NewReservationHandler(service *application.ReservationService) *Reservation
 }
 
 func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationCreateRequest) (*pb.ReservationCreateResponse, error) {
-	user , err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationC
 
 	err = h.service.CreateReservation(newReservation)
 	if err != nil {
-		return nil, err;
+		return nil, err
 	}
 
 	return &pb.ReservationCreateResponse{
@@ -54,6 +54,17 @@ func (h ReservationHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 	}, nil
 }
 
+func (h ReservationHandler) GetWaitingReservations(ctx context.Context, request *pb.WaitingReservationsForHostRequest) (*pb.WaitingReservationsForHostResponse, error) {
+	host, err := Authorize(ctx, "HOST")
+	if err != nil {
+		return nil, err
+	}
+	waitingReservations, err := h.service.GetWaitingReservations(host)
+	return &pb.WaitingReservationsForHostResponse{
+		Reservations: h.service.ConvertToGrpcWaitingReservations(waitingReservations),
+	}, err
+}
+
 func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
 	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {
@@ -70,11 +81,10 @@ func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReserv
 	}, nil
 }
 
-
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
-	user , err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
+	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
 	return user.UserEmail, err
 }

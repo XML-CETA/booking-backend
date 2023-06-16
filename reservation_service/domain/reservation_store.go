@@ -9,8 +9,9 @@ type ReservationStore interface {
 	CreateReservation(reservation Reservation) error
 	GetFirstActive(accommodation string, dateFrom, dateTo string) (Reservation, error)
 	GetByIdAndUser(reservation primitive.ObjectID, user string) (Reservation, error)
-	Cancel(reservation primitive.ObjectID) (error)
-  CountCanceled(host string) (int32, error)
-  CountNonCanceled(host string) (int32, error)
-  CountExpired(host string) (int32, error)
+	Cancel(reservation primitive.ObjectID) error
+	CountCanceled(host string) (int32, error)
+	CountNonCanceled(host string) (int32, error)
+	CountExpired(host string) (int32, error)
+	GetWaitingReservations(host string) ([]Reservation, error)
 }
