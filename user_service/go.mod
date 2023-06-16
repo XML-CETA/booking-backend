@@ -6,7 +6,7 @@ replace booking-backend/common => ../common
 
 require (
 	booking-backend/common v0.0.0-00010101000000-000000000000
-	go.mongodb.org/mongo-driver v1.11.6
+	go.mongodb.org/mongo-driver v1.11.7
 	google.golang.org/grpc v1.55.0
 )
 
