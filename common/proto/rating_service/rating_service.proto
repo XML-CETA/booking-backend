@@ -5,22 +5,63 @@ option go_package = "booking-backend/common/proto/rating_service";
 import "google/api/annotations.proto";
 
 service RatingService {
-    rpc Create(RatingAccommodationCreateRequest) returns (CreateResponse) {
+    rpc CreateAccommodationRate(RatingAccommodationRequest) returns (RateResponse) {
       option (google.api.http) = {
         post: "/ratings/accommodation"
         body: "*"
       };
     }
+
+    rpc UpdateAccommodationRate(RatingAccommodationRequest) returns (RateResponse) {
+      option (google.api.http) = {
+        put: "/ratings/accommodation"
+        body: "*"
+      };
+    }
+
+    rpc DeleteAccommodationRate(RateAccommodationIdRequest) returns (RateResponse) {
+      option (google.api.http) = {
+        delete: "/ratings/accommodation/{id}"
+      };
+    }
+
+    rpc GetAllAccommodationRates(RateAccommodationIdRequest) returns (AllAccommodationRatesResponse) {
+      option (google.api.http) = {
+        get: "/ratings/accommodation/{id}"
+      };
+    }
+
+    rpc GetAverageAccommodationRate(RateAccommodationIdRequest) returns (AverageRateAccommodationResponse) {
+      option (google.api.http) = {
+        get: "/ratings/accommodation/{id}/average"
+      };
+    }
 }
 
 
-message RatingAccommodationCreateRequest {
+message RatingAccommodationRequest {
     string accommodation = 1;
-    string user = 2;
-    int32 rate = 3;
+    int32 rate = 2;
 }
 
-message CreateResponse {
+message RateResponse {
     string data = 1;
 }
   
+message RateAccommodationIdRequest{
+  string id = 1;
+}
+
+message AverageRateAccommodationResponse{
+  float average = 1;
+}
+
+message RateAccommodationResponse{
+  string user = 1;
+  string date = 2;
+  int32 rate= 3;
+}
+
+message AllAccommodationRatesResponse{
+  repeated RateAccommodationResponse rates = 1;
+}

@@ -4,6 +4,7 @@ import (
 	cfg "booking-backend/api_gateway/startup/config"
 	accommodationGw "booking-backend/common/proto/accommodation_service"
 	"booking-backend/common/proto/auth_service"
+	"booking-backend/common/proto/rating_service"
 	"booking-backend/common/proto/reservation_service"
 	users_service "booking-backend/common/proto/user_service"
 	"context"
@@ -53,6 +54,12 @@ func (server *Server) initHandlers() {
 
 	accommodationEndpoint := fmt.Sprintf("%s:%s", server.config.AccommodationHost, server.config.AccommodationPort)
 	err = accommodationGw.RegisterAccommodationServiceHandlerFromEndpoint(context.TODO(), server.mux, accommodationEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	ratingEndpoint := fmt.Sprintf("%s:%s", server.config.RatingHost, server.config.RatingPort)
+	err = rating_service.RegisterRatingServiceHandlerFromEndpoint(context.TODO(), server.mux, ratingEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}
