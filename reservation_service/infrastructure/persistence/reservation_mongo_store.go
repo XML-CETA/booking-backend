@@ -45,6 +45,15 @@ func (repo *ReservationMongoDBStore) GetFirstActive(accommodation string, dateFr
 	return result, err
 }
 
+func (repo *ReservationMongoDBStore) GetById(reservation primitive.ObjectID) (domain.Reservation, error) {
+	filter := bson.D{
+		{Key: "_id", Value: reservation},
+	}
+	var result domain.Reservation
+	err := repo.reservations.FindOne(context.Background(), filter).Decode(&result)
+	return result, err
+}
+
 func (repo *ReservationMongoDBStore) GetAll() ([]domain.Reservation, error) {
 	var reservations []domain.Reservation
 	dataResult, err := repo.reservations.Find(context.Background(), bson.M{})
@@ -86,6 +95,23 @@ func (repo *ReservationMongoDBStore) GetByIdAndUser(reservation primitive.Object
 	err := repo.reservations.FindOne(context.Background(), filter).Decode(&result)
 
 	return result, err
+}
+
+func (repo *ReservationMongoDBStore) GetWaitingByAccommodation(accommodation string) ([]domain.Reservation, error) {
+	var reservations []domain.Reservation
+	filter := bson.D{
+		{Key: "accommodation", Value: accommodation},
+		{Key: "status", Value: domain.Waiting},
+	}
+	result, err := repo.reservations.Find(context.Background(), filter)
+	for result.Next(context.TODO()) {
+		var reservation domain.Reservation
+		err := result.Decode(&reservation)
+		if err == nil {
+			reservations = append(reservations, reservation)
+		}
+	}
+	return reservations, err
 }
 
 func (repo *ReservationMongoDBStore) ConfirmReservation(reservation primitive.ObjectID) error {

@@ -61,7 +61,12 @@ func (service *ReservationService) ConfirmReservation(reservationId string) erro
 	if err != nil {
 		return err
 	}
-	return service.store.ConfirmReservation(id)
+	reservation, err := service.store.GetById(id)
+	err = service.store.ConfirmReservation(id)
+	if err != nil {
+		return err
+	}
+	return service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 }
 
 func (service *ReservationService) Delete(reservationId string, user string) error {
@@ -123,6 +128,19 @@ func (service *ReservationService) ConvertToGrpcWaitingReservations(reservations
 	return converted
 }
 
+func (service *ReservationService) cancelReservationsWithOverlap(accommodationId string, dateFrom, dateTo string) error {
+	reservations, err := service.store.GetWaitingByAccommodation(accommodationId)
+	if err != nil {
+		return err
+	}
+	for _, entity := range reservations {
+		if isExactOverlap(entity, dateFrom, dateTo) {
+			service.store.Cancel(entity.Id)
+		}
+	}
+	return nil
+}
+
 func (service *ReservationService) getCancelRate(host string) (float32, error) {
 	nonCanceled, err := service.store.CountNonCanceled(host)
 	if err != nil {
@@ -160,6 +178,10 @@ func isAutomaticConfirmation(accommodationId string) (*accommodation_service.IsA
 	return accommodation.IsAutomaticConfirmation(context.Background(), &accommodation_service.AccommodationIdRequest{
 		Id: accommodationId,
 	})
+}
+
+func isExactOverlap(reservation domain.Reservation, dateFrom, dateTo string) bool {
+	return reservation.DateFrom == dateFrom && reservation.DateTo == dateTo
 }
 
 func checkReservationDate(dateFrom string) bool {
