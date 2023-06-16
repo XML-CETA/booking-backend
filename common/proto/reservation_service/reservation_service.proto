@@ -42,6 +42,7 @@ message Reservation {
 	string dateTo = 5;
 	int32 guests = 6;
 	int32 status = 7;
+  string host = 8;
 }
 
 message GetAllRequest {

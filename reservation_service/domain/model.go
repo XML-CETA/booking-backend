@@ -8,6 +8,7 @@ const (
 	Waiting Status = iota
 	Reserved
 	Expired
+  Canceled
 )
 
 type Reservation struct{
@@ -18,6 +19,7 @@ type Reservation struct{
 	DateTo string
 	Guests int32
 	Status Status
+  Host string
 }
 
 func MakeReservation(guests int32, accommodation, user, dateFrom, dateTo string) Reservation {

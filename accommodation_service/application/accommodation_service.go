@@ -106,13 +106,13 @@ func (service *AccommodationService) UpdateAppointment(appointment domain.Update
 	return service.store.Update(*accommodation)
 }
 
-func (service *AccommodationService) ValidateReservation(accommodationId primitive.ObjectID, interval domain.DateInterval) error {
+func (service *AccommodationService) ValidateReservation(accommodationId primitive.ObjectID, interval domain.DateInterval) (string, error) {
 	accommodation, err := service.store.GetById(accommodationId)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return func(appointments []domain.Appointment, interval domain.DateInterval) error {
+	return accommodation.Host, func(appointments []domain.Appointment, interval domain.DateInterval) error {
 		for _, entity := range appointments {
 			if isExactOverlap(interval, entity.Interval) {
 				return nil
