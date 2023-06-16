@@ -21,6 +21,11 @@ service ReservationService {
 			get: "/reservations/waiting"
 		};
 	}
+	rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse){
+		option (google.api.http) = {
+			put: "/reservations/confirm/{id}"
+		};
+	}
   rpc Delete(DeleteReservationRequest) returns (DeleteReservationResponse) {
 		option (google.api.http) = {
 		  delete: "/reservations/{id}"
@@ -65,8 +70,16 @@ message WaitingReservation {
 	string dateFrom = 4;
 	string dateTo = 5;
 	int32 guests = 6;
-	int32 userCanceledReservationsNumber = 7;
+	int32 userCanceledReservations = 7;
 
+}
+
+message ConfirmReservationRequest{
+	string id = 1;
+}
+
+message ConfirmReservationResponse{
+	string message = 1;
 }
 
 message GetAllRequest {

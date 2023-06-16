@@ -65,6 +65,22 @@ func (h ReservationHandler) GetWaitingReservations(ctx context.Context, request 
 	}, err
 }
 
+func (h ReservationHandler) ConfirmReservation(ctx context.Context, request *pb.ConfirmReservationRequest) (*pb.ConfirmReservationResponse, error) {
+	_, err := Authorize(ctx, "HOST")
+	if err != nil {
+		return nil, err
+	}
+
+	err = h.service.ConfirmReservation(request.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ConfirmReservationResponse{
+		Message: "Reservation is confirmed",
+	}, nil
+}
+
 func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
 	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {

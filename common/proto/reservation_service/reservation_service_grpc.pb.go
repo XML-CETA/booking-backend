@@ -23,6 +23,7 @@ const (
 	ReservationService_Create_FullMethodName                 = "/ReservationService/Create"
 	ReservationService_GetAll_FullMethodName                 = "/ReservationService/GetAll"
 	ReservationService_GetWaitingReservations_FullMethodName = "/ReservationService/GetWaitingReservations"
+	ReservationService_ConfirmReservation_FullMethodName     = "/ReservationService/ConfirmReservation"
 	ReservationService_Delete_FullMethodName                 = "/ReservationService/Delete"
 )
 
@@ -33,6 +34,7 @@ type ReservationServiceClient interface {
 	Create(ctx context.Context, in *ReservationCreateRequest, opts ...grpc.CallOption) (*ReservationCreateResponse, error)
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 	GetWaitingReservations(ctx context.Context, in *WaitingReservationsForHostRequest, opts ...grpc.CallOption) (*WaitingReservationsForHostResponse, error)
+	ConfirmReservation(ctx context.Context, in *ConfirmReservationRequest, opts ...grpc.CallOption) (*ConfirmReservationResponse, error)
 	Delete(ctx context.Context, in *DeleteReservationRequest, opts ...grpc.CallOption) (*DeleteReservationResponse, error)
 }
 
@@ -71,6 +73,15 @@ func (c *reservationServiceClient) GetWaitingReservations(ctx context.Context, i
 	return out, nil
 }
 
+func (c *reservationServiceClient) ConfirmReservation(ctx context.Context, in *ConfirmReservationRequest, opts ...grpc.CallOption) (*ConfirmReservationResponse, error) {
+	out := new(ConfirmReservationResponse)
+	err := c.cc.Invoke(ctx, ReservationService_ConfirmReservation_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *reservationServiceClient) Delete(ctx context.Context, in *DeleteReservationRequest, opts ...grpc.CallOption) (*DeleteReservationResponse, error) {
 	out := new(DeleteReservationResponse)
 	err := c.cc.Invoke(ctx, ReservationService_Delete_FullMethodName, in, out, opts...)
@@ -87,6 +98,7 @@ type ReservationServiceServer interface {
 	Create(context.Context, *ReservationCreateRequest) (*ReservationCreateResponse, error)
 	GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error)
 	GetWaitingReservations(context.Context, *WaitingReservationsForHostRequest) (*WaitingReservationsForHostResponse, error)
+	ConfirmReservation(context.Context, *ConfirmReservationRequest) (*ConfirmReservationResponse, error)
 	Delete(context.Context, *DeleteReservationRequest) (*DeleteReservationResponse, error)
 	mustEmbedUnimplementedReservationServiceServer()
 }
@@ -103,6 +115,9 @@ func (UnimplementedReservationServiceServer) GetAll(context.Context, *GetAllRequ
 }
 func (UnimplementedReservationServiceServer) GetWaitingReservations(context.Context, *WaitingReservationsForHostRequest) (*WaitingReservationsForHostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWaitingReservations not implemented")
+}
+func (UnimplementedReservationServiceServer) ConfirmReservation(context.Context, *ConfirmReservationRequest) (*ConfirmReservationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmReservation not implemented")
 }
 func (UnimplementedReservationServiceServer) Delete(context.Context, *DeleteReservationRequest) (*DeleteReservationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -174,6 +189,24 @@ func _ReservationService_GetWaitingReservations_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReservationService_ConfirmReservation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmReservationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReservationServiceServer).ConfirmReservation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReservationService_ConfirmReservation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReservationServiceServer).ConfirmReservation(ctx, req.(*ConfirmReservationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ReservationService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteReservationRequest)
 	if err := dec(in); err != nil {
@@ -210,6 +243,10 @@ var ReservationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWaitingReservations",
 			Handler:    _ReservationService_GetWaitingReservations_Handler,
+		},
+		{
+			MethodName: "ConfirmReservation",
+			Handler:    _ReservationService_ConfirmReservation_Handler,
 		},
 		{
 			MethodName: "Delete",

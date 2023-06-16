@@ -88,10 +88,24 @@ func (repo *ReservationMongoDBStore) GetByIdAndUser(reservation primitive.Object
 	return result, err
 }
 
+func (repo *ReservationMongoDBStore) ConfirmReservation(reservation primitive.ObjectID) error {
+	filter := bson.D{{Key: "_id", Value: reservation}}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "status", Value: domain.Reserved},
+		}},
+	}
+	_, err := repo.reservations.UpdateOne(context.Background(), filter, update)
+	return err
+}
+
 func (repo *ReservationMongoDBStore) Cancel(reservation primitive.ObjectID) error {
 	filter := bson.D{{Key: "_id", Value: reservation}}
-	update := bson.D{{Key: "status", Value: domain.Canceled}}
-
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "status", Value: domain.Canceled},
+		}},
+	}
 	_, err := repo.reservations.UpdateOne(context.Background(), filter, update)
 	return err
 }
@@ -100,6 +114,12 @@ func (repo *ReservationMongoDBStore) CountCanceled(host string) (int32, error) {
 	filterStatus := bson.D{{Key: "status", Value: domain.Canceled}}
 	filter := makeStatusHostFilter(filterStatus, host)
 
+	return repo.countDocuments(filter)
+}
+
+func (repo *ReservationMongoDBStore) CountUserCanceled(user string) (int32, error) {
+	filterStatus := bson.D{{Key: "status", Value: domain.Canceled}}
+	filter := makeStatusUserFilter(filterStatus, user)
 	return repo.countDocuments(filter)
 }
 
@@ -134,6 +154,15 @@ func makeStatusHostFilter(filterStatus primitive.D, host string) primitive.D {
 		Key: "$and", Value: bson.A{
 			filterStatus,
 			bson.D{{Key: "host", Value: host}},
+		},
+	}}
+}
+
+func makeStatusUserFilter(filterStatus primitive.D, host string) primitive.D {
+	return bson.D{{
+		Key: "$and", Value: bson.A{
+			filterStatus,
+			bson.D{{Key: "user", Value: host}},
 		},
 	}}
 }

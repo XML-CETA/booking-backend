@@ -56,6 +56,14 @@ func (service *ReservationService) GetWaitingReservations(host string) ([]domain
 	return service.store.GetWaitingReservations(host)
 }
 
+func (service *ReservationService) ConfirmReservation(reservationId string) error {
+	id, err := primitive.ObjectIDFromHex(reservationId)
+	if err != nil {
+		return err
+	}
+	return service.store.ConfirmReservation(id)
+}
+
 func (service *ReservationService) Delete(reservationId string, user string) error {
 	id, err := primitive.ObjectIDFromHex(reservationId)
 	if err != nil {
@@ -100,15 +108,15 @@ func (service *ReservationService) ConvertToGrpcWaitingReservations(reservations
 	var converted []*pb.WaitingReservation
 
 	for _, entity := range reservations {
-		canceledCount, _ := service.store.CountCanceled(entity.User)
+		canceledCount, _ := service.store.CountUserCanceled(entity.User)
 		newRes := pb.WaitingReservation{
-			Id:                             entity.Id.Hex(),
-			Accommodation:                  entity.Accommodation,
-			DateFrom:                       entity.DateFrom,
-			DateTo:                         entity.DateTo,
-			Guests:                         entity.Guests,
-			User:                           entity.User,
-			UserCanceledReservationsNumber: canceledCount,
+			Id:                       entity.Id.Hex(),
+			Accommodation:            entity.Accommodation,
+			DateFrom:                 entity.DateFrom,
+			DateTo:                   entity.DateTo,
+			Guests:                   entity.Guests,
+			User:                     entity.User,
+			UserCanceledReservations: canceledCount,
 		}
 		converted = append(converted, &newRes)
 	}
