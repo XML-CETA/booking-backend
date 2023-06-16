@@ -57,7 +57,9 @@ message AverageRateAccommodationResponse{
 }
 
 message RateAccommodationResponse{
-  int32 rate= 1;
+  string user = 1;
+  string date = 2;
+  int32 rate= 3;
 }
 
 message AllAccommodationRatesResponse{
