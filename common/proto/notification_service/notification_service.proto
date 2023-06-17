@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "booking-backend/common/proto/notification_service";
+
+import "google/api/annotations.proto";
+
+service NotificationService {
+  rpc Hello(GetUserNotificationsRequest) returns (GetUserNotificationsResponse) {
+    option (google.api.http) = {
+      post: "/notifications"
+      body: "*"
+    };
+  }
+}
+
+message GetUserNotificationsRequest {
+}
+
+message GetUserNotificationsResponse {
+}
