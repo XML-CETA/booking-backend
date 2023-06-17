@@ -1,6 +1,7 @@
 package application
 
 import (
+	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/domain"
 	"errors"
 )
@@ -28,4 +29,13 @@ func (service *NotificationService) NewUserSettings(host string, role string) er
 
 func (service *NotificationService) GetUserSettings(host string) (domain.NotificationSettings, error) {
   return service.notificationSettings.GetUserSettings(host)
+}
+
+func (service *NotificationService) UpdateUserSettings(host string, body *notification_service.UpdateUserSettingsRequest) (domain.NotificationSettings, error) {
+  err := service.notificationSettings.Update(host, body)
+  if err != nil {
+    return domain.NotificationSettings{}, err
+  }
+
+  return service.GetUserSettings(host)
 }

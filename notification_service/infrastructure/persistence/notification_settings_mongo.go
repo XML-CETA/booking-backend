@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/domain"
 	"context"
 
@@ -37,4 +38,20 @@ func (store *NotificationSettingsDB) GetUserSettings(user string) (domain.Notifi
 	var result domain.NotificationSettings
 	err := store.notificationSettings.FindOne(context.Background(), filter).Decode(&result)
 	return result, err
+}
+
+func (store *NotificationSettingsDB) Update(user string, body *notification_service.UpdateUserSettingsRequest) error {
+	filter := bson.D{{Key: "user", Value: user}}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "reservationrequest", Value: body.ReservationRequest},
+			{Key: "reservationcancel", Value: body.ReservationCancel},
+			{Key: "personalrating", Value: body.PersonalRating},
+			{Key: "accommodationrating", Value: body.AccommodationRating},
+			{Key: "prominentstatuschange", Value: body.ProminentStatusChange},
+			{Key: "reservationresponse", Value: body.ReservationResponse},
+		}},
+	}
+	_, err := store.notificationSettings.UpdateOne(context.Background(), filter, update)
+	return err
 }

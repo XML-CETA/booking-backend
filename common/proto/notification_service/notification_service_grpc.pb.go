@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	NotificationService_GetUserNotifications_FullMethodName = "/NotificationService/GetUserNotifications"
+	NotificationService_UpdateUserSettings_FullMethodName   = "/NotificationService/UpdateUserSettings"
 	NotificationService_NewUserSettings_FullMethodName      = "/NotificationService/NewUserSettings"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotificationServiceClient interface {
 	GetUserNotifications(ctx context.Context, in *GetUserNotificationsRequest, opts ...grpc.CallOption) (*GetUserNotificationsResponse, error)
+	UpdateUserSettings(ctx context.Context, in *UpdateUserSettingsRequest, opts ...grpc.CallOption) (*GetUserNotificationsResponse, error)
 	NewUserSettings(ctx context.Context, in *NewUserSettingsRequest, opts ...grpc.CallOption) (*NewUserSettingsResponse, error)
 }
 
@@ -48,6 +50,15 @@ func (c *notificationServiceClient) GetUserNotifications(ctx context.Context, in
 	return out, nil
 }
 
+func (c *notificationServiceClient) UpdateUserSettings(ctx context.Context, in *UpdateUserSettingsRequest, opts ...grpc.CallOption) (*GetUserNotificationsResponse, error) {
+	out := new(GetUserNotificationsResponse)
+	err := c.cc.Invoke(ctx, NotificationService_UpdateUserSettings_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *notificationServiceClient) NewUserSettings(ctx context.Context, in *NewUserSettingsRequest, opts ...grpc.CallOption) (*NewUserSettingsResponse, error) {
 	out := new(NewUserSettingsResponse)
 	err := c.cc.Invoke(ctx, NotificationService_NewUserSettings_FullMethodName, in, out, opts...)
@@ -62,6 +73,7 @@ func (c *notificationServiceClient) NewUserSettings(ctx context.Context, in *New
 // for forward compatibility
 type NotificationServiceServer interface {
 	GetUserNotifications(context.Context, *GetUserNotificationsRequest) (*GetUserNotificationsResponse, error)
+	UpdateUserSettings(context.Context, *UpdateUserSettingsRequest) (*GetUserNotificationsResponse, error)
 	NewUserSettings(context.Context, *NewUserSettingsRequest) (*NewUserSettingsResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
@@ -72,6 +84,9 @@ type UnimplementedNotificationServiceServer struct {
 
 func (UnimplementedNotificationServiceServer) GetUserNotifications(context.Context, *GetUserNotificationsRequest) (*GetUserNotificationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserNotifications not implemented")
+}
+func (UnimplementedNotificationServiceServer) UpdateUserSettings(context.Context, *UpdateUserSettingsRequest) (*GetUserNotificationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSettings not implemented")
 }
 func (UnimplementedNotificationServiceServer) NewUserSettings(context.Context, *NewUserSettingsRequest) (*NewUserSettingsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewUserSettings not implemented")
@@ -107,6 +122,24 @@ func _NotificationService_GetUserNotifications_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_UpdateUserSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).UpdateUserSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_UpdateUserSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).UpdateUserSettings(ctx, req.(*UpdateUserSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _NotificationService_NewUserSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewUserSettingsRequest)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserNotifications",
 			Handler:    _NotificationService_GetUserNotifications_Handler,
+		},
+		{
+			MethodName: "UpdateUserSettings",
+			Handler:    _NotificationService_UpdateUserSettings_Handler,
 		},
 		{
 			MethodName: "NewUserSettings",

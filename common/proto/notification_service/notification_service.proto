@@ -11,6 +11,13 @@ service NotificationService {
     };
   }
 
+  rpc UpdateUserSettings(UpdateUserSettingsRequest) returns (GetUserNotificationsResponse) {
+    option (google.api.http) = {
+      put: "/notifications"
+      body: "*"
+    };
+  }
+
   rpc NewUserSettings(NewUserSettingsRequest) returns (NewUserSettingsResponse) {
   }
 }
@@ -35,3 +42,12 @@ message NewUserSettingsRequest {
 }
 
 message NewUserSettingsResponse {}
+
+message UpdateUserSettingsRequest {
+  bool reservationRequest = 1;
+  bool reservationCancel = 2;
+  bool personalRating = 3;
+  bool accommodationRating = 4;
+  bool prominentStatusChange = 5;
+  bool reservationResponse = 6;
+}

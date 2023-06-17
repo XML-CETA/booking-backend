@@ -5,6 +5,7 @@ import (
 	"booking-backend/common/proto/auth_service"
 	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/application"
+	"booking-backend/notification_service/domain"
 	"booking-backend/notification_service/startup/config"
 	"context"
 	"fmt"
@@ -35,16 +36,7 @@ func (h NotificationHandler) GetUserNotifications(ctx context.Context, request *
 	}
 
 
-  return &notification_service.GetUserNotificationsResponse{
-      User: settings.User,
-      Role: settings.Role,
-      ReservationRequest: settings.ReservationRequest,
-      ReservationCancel: settings.ReservationCancel,
-      PersonalRating: settings.PersonalRating,
-      AccommodationRating: settings.AccommodationRating,
-      ProminentStatusChange: settings.ProminentStatusChange,
-      ReservationResponse: settings.ReservationResponse,
-  }, nil
+  return toGrpcUserSettings(settings), nil
 }
 
 func (h NotificationHandler) NewUserSettings(ctx context.Context, request *notification_service.NewUserSettingsRequest) (*notification_service.NewUserSettingsResponse, error) {
@@ -57,6 +49,20 @@ func (h NotificationHandler) NewUserSettings(ctx context.Context, request *notif
   }, nil
 }
 
+func (h NotificationHandler) UpdateUserSettings(ctx context.Context, request *notification_service.UpdateUserSettingsRequest) (*notification_service.GetUserNotificationsResponse, error) {
+	user, err := Authorize(ctx, "HOST")
+	if err != nil {
+		return nil, err
+	}
+
+  response, err := h.service.UpdateUserSettings(user, request)
+	if err != nil {
+		return nil, err
+	}
+
+  return toGrpcUserSettings(response), nil
+}
+
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
@@ -67,4 +73,18 @@ func Authorize(ctx context.Context, roleGuard string) (string, error) {
   }
 
 	return user.UserEmail, nil
+}
+
+func toGrpcUserSettings(settings domain.NotificationSettings) *notification_service.GetUserNotificationsResponse{
+  return &notification_service.GetUserNotificationsResponse{
+      User: settings.User,
+      Role: settings.Role,
+      ReservationRequest: settings.ReservationRequest,
+      ReservationCancel: settings.ReservationCancel,
+      PersonalRating: settings.PersonalRating,
+      AccommodationRating: settings.AccommodationRating,
+      ProminentStatusChange: settings.ProminentStatusChange,
+      ReservationResponse: settings.ReservationResponse,
+  }
+
 }
