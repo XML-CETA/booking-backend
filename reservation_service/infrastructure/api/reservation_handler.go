@@ -9,7 +9,6 @@ import (
 	"booking-backend/reservation-service/startup/config"
 	"context"
 	"fmt"
-	"log"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -83,12 +82,10 @@ func (h ReservationHandler) ConfirmReservation(ctx context.Context, request *pb.
 }
 
 func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
-  log.Println("PREAUTHORIZE")
 	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {
 		return nil, err
 	}
-  log.Println("POSTAUTHORIZE")
 
 	err = h.service.Delete(request.Id, user)
 	if err != nil {
