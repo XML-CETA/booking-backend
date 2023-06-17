@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option go_package = "booking-backend/common/proto/notification_service";
+
+import "google/api/annotations.proto";
+
+service NotificationService {
+  rpc GetUserNotifications(GetUserNotificationsRequest) returns (GetUserNotificationsResponse) {
+    option (google.api.http) = {
+      get: "/notifications"
+    };
+  }
+
+  rpc UpdateUserSettings(UpdateUserSettingsRequest) returns (GetUserNotificationsResponse) {
+    option (google.api.http) = {
+      put: "/notifications"
+      body: "*"
+    };
+  }
+
+  rpc NewUserSettings(NewUserSettingsRequest) returns (NewUserSettingsResponse) {
+  }
+}
+
+message GetUserNotificationsRequest {
+}
+
+message GetUserNotificationsResponse {
+  string user = 1;
+  string role = 2;
+  bool reservationRequest = 3;
+  bool reservationCancel = 4;
+  bool personalRating = 5;
+  bool accommodationRating = 6;
+  bool prominentStatusChange = 7;
+  bool reservationResponse = 8;
+  repeated Notification notifications = 9;
+}
+
+message Notification {
+  string id = 1;
+  string subject = 3;
+  string content = 4;
+  bool viewed = 5;
+}
+
+
+message NewUserSettingsRequest {
+  string host = 1;
+  string role = 2;
+}
+
+message NewUserSettingsResponse {}
+
+message UpdateUserSettingsRequest {
+  bool reservationRequest = 1;
+  bool reservationCancel = 2;
+  bool personalRating = 3;
+  bool accommodationRating = 4;
+  bool prominentStatusChange = 5;
+  bool reservationResponse = 6;
+}

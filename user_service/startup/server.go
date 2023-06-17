@@ -39,8 +39,9 @@ func (server *Server) Start() {
 	ratingStore := server.initRatingStore(mongoClient)
 
   subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
+  publisher := server.initPublisher(server.config.NotificationSubject)
 
-	userService := server.initUserService(userStore, ratingStore, subscriber)
+	userService := server.initUserService(userStore, ratingStore, subscriber, publisher)
 
 	userHandler := server.initUserHandler(userService)
 
@@ -65,8 +66,8 @@ func (server *Server) initRatingStore(client *mongo.Client) domain.RatingStore {
 	return ratingStore
 }
 
-func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel) *application.UserService {
-  service, err := application.NewUserService(store, ratingStore, subscriber)
+func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, publisher messaging.PublisherModel) *application.UserService {
+  service, err := application.NewUserService(store, ratingStore, subscriber, publisher)
 
   if err != nil {
     log.Fatalf("Failed to start service %v", err)
@@ -99,4 +100,14 @@ func (server *Server) initSubscriber(subject, queueGroup string) messaging.Subsc
 		log.Fatal(err)
 	}
 	return subscriber
+}
+
+func (server *Server) initPublisher(subject string) messaging.PublisherModel {
+	publisher, err := messaging.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
 }

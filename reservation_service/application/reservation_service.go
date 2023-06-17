@@ -18,12 +18,14 @@ import (
 type ReservationService struct {
 	store                  domain.ReservationStore
 	prominentHostPublisher messaging.PublisherModel
+  notificationPublisher messaging.PublisherModel
 }
 
-func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *ReservationService {
+func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel, notificationPublisher messaging.PublisherModel) *ReservationService {
 	return &ReservationService{
 		store:                  store,
 		prominentHostPublisher: prominentHostPublisher,
+    notificationPublisher: notificationPublisher,
 	}
 }
 
@@ -57,6 +59,13 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 
   if err == nil {
     service.prominentHostPublisher.Publish(reservation.Host)
+
+    service.notificationPublisher.Publish(messaging.NotificationMessage{
+      User: reservation.Host,
+      Subject: "You have a new reservation request!",
+      Content: fmt.Sprintf("%v requested for a reservation on accommodation with id: %v", reservation.User, reservation.Accommodation),
+      Type: messaging.ReservationRequest,
+    })
   }
 
   return err
@@ -85,6 +94,13 @@ func (service *ReservationService) ConfirmReservation(reservationId string) erro
 
   if err == nil {
     service.prominentHostPublisher.Publish(reservation.Host)
+
+    service.notificationPublisher.Publish(messaging.NotificationMessage{
+      User: reservation.User,
+      Subject: "Your reservation has been approved!",
+      Content: fmt.Sprintf("Reservation lasting from %v to %v has been approved!", reservation.DateFrom, reservation.DateTo),
+      Type: messaging.ReservationResponse,
+    })
   }
 
   return err
@@ -110,6 +126,13 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 
   if err == nil {
     service.prominentHostPublisher.Publish(reservation.Host)
+
+    service.notificationPublisher.Publish(messaging.NotificationMessage{
+      User: reservation.Host,
+      Subject: "A reservation has been canceled!",
+      Content: fmt.Sprintf("Reservation lasting from %v to %v has been canceled :(", reservation.DateFrom, reservation.DateTo),
+      Type: messaging.ReservationCancel,
+    })
   }
 
   return err

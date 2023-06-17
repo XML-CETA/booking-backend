@@ -14,6 +14,8 @@ type Config struct {
 	RatingPort        string
 	AuthHost          string
 	AuthPort          string
+  NotificationHost string
+  NotificationPort string
 }
 
 func NewConfig() *Config {
@@ -29,5 +31,7 @@ func NewConfig() *Config {
 		RatingPort:        os.Getenv("RATING_SERVICE_PORT"),
 		AuthHost:          os.Getenv("AUTH_SERVICE_HOST"),
 		AuthPort:          os.Getenv("AUTH_SERVICE_PORT"),
+    NotificationHost: os.Getenv("NOTIFICATION_SERVICE_HOST"),
+    NotificationPort: os.Getenv("NOTIFICATION_SERVICE_PORT"),
 	}
 }

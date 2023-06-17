@@ -32,8 +32,9 @@ func (server *Server) Start() {
 	reservationStore := server.initReservationStore(mongoClient)
 
   publisher := server.initPublisher(server.config.ProminentHostSubject)
+  notificationPublisher := server.initPublisher(server.config.NotificationSubject)
 
-	reservationService := server.initReservationService(reservationStore, publisher)
+	reservationService := server.initReservationService(reservationStore, publisher, notificationPublisher)
 
 	reservationHandler := server.initReservationHandler(reservationService)
 
@@ -53,8 +54,8 @@ func (server *Server) initReservationStore(client *mongo.Client) domain.Reservat
 	return store
 }
 
-func (server *Server) initReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel) *application.ReservationService {
-	return application.NewReservationService(store, prominentHostPublisher)
+func (server *Server) initReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel, notificationPublisher messaging.PublisherModel) *application.ReservationService {
+	return application.NewReservationService(store, prominentHostPublisher, notificationPublisher)
 }
 
 func (server *Server) initReservationHandler(service *application.ReservationService) *api.ReservationHandler {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-my_array=("accommodation_service" "reservation_service" "user_service" "auth_service" "rating_service")
+my_array=("accommodation_service" "reservation_service" "user_service" "auth_service" "rating_service" "notification_service")
 
 for element in "${my_array[@]}"
 do
