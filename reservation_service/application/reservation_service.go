@@ -38,14 +38,28 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 
 	reservation.Host = response.Host
 	isAutomatic, err := isAutomaticConfirmation(reservation.Accommodation)
-	if isAutomatic.IsAutomaticConfirmation {
-		reservation.Status = domain.Reserved
-	}
+
 	if err != nil {
 		return err
 	}
 
-	return service.store.CreateReservation(reservation)
+	if isAutomatic.IsAutomaticConfirmation {
+		reservation.Status = domain.Reserved
+	}
+
+  reservation.Duration, err= calculateDuration(reservation.DateFrom, reservation.DateTo)
+
+	if err != nil {
+		return err
+	}
+
+  err =  service.store.CreateReservation(reservation)
+
+  if err == nil {
+    service.prominentHostPublisher.Publish(reservation.Host)
+  }
+
+  return err
 }
 
 func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
@@ -66,7 +80,14 @@ func (service *ReservationService) ConfirmReservation(reservationId string) erro
 	if err != nil {
 		return err
 	}
-	return service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+
+  err = service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+
+  if err == nil {
+    service.prominentHostPublisher.Publish(reservation.Host)
+  }
+
+  return err
 }
 
 func (service *ReservationService) Delete(reservationId string, user string) error {
@@ -85,7 +106,13 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 		return errors.New("Can not delete, reservation starts in less then a day or is in progress")
 	}
 
-	return service.store.Cancel(id)
+	err = service.store.Cancel(id)
+
+  if err == nil {
+    service.prominentHostPublisher.Publish(reservation.Host)
+  }
+
+  return err
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -141,22 +168,26 @@ func (service *ReservationService) cancelReservationsWithOverlap(accommodationId
 	return nil
 }
 
-func (service *ReservationService) getCancelRate(host string) (float32, error) {
+func (service *ReservationService) GetCancelRate(host string) (float32, error) {
 	nonCanceled, err := service.store.CountNonCanceled(host)
 	if err != nil {
 		return 0.0, err
 	}
 
 	canceled, err := service.store.CountCanceled(host)
-	if err != nil {
+	if err != nil || canceled == 0 {
 		return 0.0, err
 	}
 
 	return float32(nonCanceled / canceled), nil
 }
 
-func (service *ReservationService) getExpiredCount(host string) (int32, error) {
+func (service *ReservationService) GetExpiredCount(host string) (int32, error) {
 	return service.store.CountExpired(host)
+}
+
+func (service *ReservationService) GetIntervalCount(host string) (int32, error) {
+  return service.store.GetHostIntervalSum(host)
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
@@ -196,4 +227,20 @@ func checkReservationDate(dateFrom string) bool {
 
 func canDeleteReservation(reservation domain.Reservation) bool {
 	return reservation.Status == domain.Reserved && checkReservationDate(reservation.DateFrom)
+}
+
+func calculateDuration(dateFromString, dateToString string) (int32, error) {
+	dateFrom, err := time.Parse(time.DateOnly, dateFromString)
+	if err != nil {
+		return 0, err
+	}
+
+	dateTo, err := time.Parse(time.DateOnly, dateToString)
+	if err != nil {
+		return 0, err
+	}
+
+  difference := dateTo.Sub(dateFrom)
+
+  return int32(difference.Hours() / 24), nil
 }

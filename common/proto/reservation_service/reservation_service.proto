@@ -31,6 +31,8 @@ service ReservationService {
 		  delete: "/reservations/{id}"
 		};
 	}
+  rpc GetHostAnalytics(HostAnalyticsRequest) returns (HostAnalyticsResponse) {
+	}
 }
 
 message ReservationCreateRequest {
@@ -95,4 +97,14 @@ message DeleteReservationRequest {
 
 message DeleteReservationResponse {
 	string message = 1;
+}
+
+message HostAnalyticsRequest {
+  string host = 1;
+}
+
+message HostAnalyticsResponse {
+  float cancelRate = 1;
+  int32 expiredCount = 2;
+  int32 intervalCount = 3;
 }

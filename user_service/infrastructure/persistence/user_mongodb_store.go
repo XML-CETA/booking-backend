@@ -54,11 +54,24 @@ func (store *UserMongoDBStore) Update(user domain.User) error {
 }
 
 func (store *UserMongoDBStore) GetOne(email string) (domain.User, error) {
-
 	filter := bson.D{{Key: "email", Value: email}}
 
 	var result domain.User
 	err := store.users.FindOne(context.TODO(), filter).Decode(&result)
 
 	return result, err
+}
+
+func (store *UserMongoDBStore) UpdateProminent(isProminent bool, host string) (error) {
+	filter := bson.D{{Key: "email", Value: host}}
+
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "isprominent", Value: isProminent},
+		}},
+	}
+
+	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+	return err
 }

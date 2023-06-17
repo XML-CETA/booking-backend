@@ -9,6 +9,7 @@ import (
 	"booking-backend/reservation-service/startup/config"
 	"context"
 	"fmt"
+	"log"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -82,10 +83,12 @@ func (h ReservationHandler) ConfirmReservation(ctx context.Context, request *pb.
 }
 
 func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
+  log.Println("PREAUTHORIZE")
 	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {
 		return nil, err
 	}
+  log.Println("POSTAUTHORIZE")
 
 	err = h.service.Delete(request.Id, user)
 	if err != nil {
@@ -97,10 +100,38 @@ func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReserv
 	}, nil
 }
 
+func (h ReservationHandler) GetHostAnalytics(ctx context.Context, request *pb.HostAnalyticsRequest) (*pb.HostAnalyticsResponse, error) {
+  cancelRate, err := h.service.GetCancelRate(request.Host)
+	if err != nil {
+		return nil, err
+	}
+
+  expiredCount, err := h.service.GetExpiredCount(request.Host)
+	if err != nil {
+		return nil, err
+	}
+
+  intervalCount, err := h.service.GetIntervalCount(request.Host)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.HostAnalyticsResponse{
+    CancelRate: cancelRate,
+    ExpiredCount: expiredCount,
+    IntervalCount: intervalCount,
+	}, nil
+}
+
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
-	return user.UserEmail, err
+  if err != nil {
+    return "", err
+  }
+
+	return user.UserEmail, nil
 }
+

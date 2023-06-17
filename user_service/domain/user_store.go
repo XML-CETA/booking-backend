@@ -5,4 +5,5 @@ type UserStore interface {
 	Delete(email string) error
 	Update(user User) error
 	GetOne(email string) (User, error)
+  UpdateProminent(isProminent bool, host string) error
 }
