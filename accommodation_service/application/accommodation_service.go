@@ -2,10 +2,12 @@ package application
 
 import (
 	"booking-backend/accommodation_service/domain"
+
 	"booking-backend/accommodation_service/startup/config"
 	"booking-backend/common/clients"
 	pb "booking-backend/common/proto/accommodation_service"
 	"booking-backend/common/proto/reservation_service"
+	users_service "booking-backend/common/proto/user_service"
 	"context"
 	"errors"
 	"fmt"
@@ -190,6 +192,10 @@ func checkOverlap(interval domain.DateInterval, helperInterval domain.DateInterv
 			interval.DateFrom, interval.DateTo, helperInterval.DateFrom, helperInterval.DateTo)
 	}
 	return nil
+}
+
+func getUserClient() users_service.UsersServiceClient {
+	return clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 }
 
 //GRPC CONVERTERS -> OVO IZMESTITI POSLE
