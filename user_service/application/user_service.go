@@ -1,12 +1,17 @@
 package application
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"log"
 
+	"booking-backend/common/clients"
 	"booking-backend/common/messaging"
+	"booking-backend/common/proto/reservation_service"
 	pb "booking-backend/common/proto/user_service"
 	"booking-backend/user-service/domain"
+	"booking-backend/user-service/startup/config"
 )
 
 type UserService struct {
@@ -86,6 +91,24 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 	return rpcUser
 }
 
-func (service *UserService) ProminentUser(message string) {
-  log.Print("HERE I AM " + message)
+func (service *UserService) ProminentUser(host string) {
+  reservation := getReservationClient()
+
+  response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
+
+  if err != nil {
+    return
+  }
+
+  service.store.UpdateProminent(isProminent(response), host)
+}
+
+func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
+  return reservationAnalytics.CancelRate < 5.0 &&
+        reservationAnalytics.ExpiredCount >= 5 &&
+        reservationAnalytics.IntervalCount > 50
+}
+
+func getReservationClient() reservation_service.ReservationServiceClient {
+	return clients.NewReservationClient(fmt.Sprintf("%s:%s", config.NewConfig().ReservationHost, config.NewConfig().ReservationPort))
 }

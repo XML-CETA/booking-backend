@@ -175,6 +175,31 @@ func (repo *ReservationMongoDBStore) countDocuments(filter primitive.D) (int32, 
 	return int32(count), nil
 }
 
+func (repo *ReservationMongoDBStore) GetHostIntervalSum(host string) (int32, error) {
+  matchStage := bson.D {{
+    Key: "$match", Value: bson.D {{ Key: "host", Value: host }},
+  }}
+
+  groupStage := bson.D {{
+    Key: "$group", Value: bson.D {
+      { Key: "_id", Value: "$host" },
+      { Key: "sum", Value: bson.D{{Key: "$sum", Value: "$duration"}} },
+    },
+  }}
+
+  cursor, err := repo.reservations.Aggregate(context.TODO(), mongo.Pipeline{matchStage, groupStage})
+  if err != nil {
+      panic(err)
+  }
+
+  var results []bson.M
+  if err = cursor.All(context.TODO(), &results); err != nil {
+      panic(err)
+  }
+
+  return results[0]["sum"].(int32), nil
+}
+
 func makeStatusHostFilter(filterStatus primitive.D, host string) primitive.D {
 	return bson.D{{
 		Key: "$and", Value: bson.A{
@@ -192,3 +217,4 @@ func makeStatusUserFilter(filterStatus primitive.D, host string) primitive.D {
 		},
 	}}
 }
+

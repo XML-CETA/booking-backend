@@ -20,6 +20,7 @@ type Reservation struct{
 	Guests int32
 	Status Status
   Host string
+  Duration int32
 }
 
 func MakeReservation(guests int32, accommodation, user, dateFrom, dateTo string) Reservation {
