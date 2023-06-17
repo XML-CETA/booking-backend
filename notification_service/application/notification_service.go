@@ -5,7 +5,6 @@ import (
 	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/domain"
 	"errors"
-	"log"
 )
 
 type NotificationService struct {

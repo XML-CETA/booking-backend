@@ -19,13 +19,15 @@ type UserService struct {
 	store       domain.UserStore
 	ratingStore domain.RatingStore
   subscriber  messaging.SubscriberModel
+  notificationPublisher messaging.PublisherModel
 }
 
-func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel) (*UserService, error) {
+func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, notificationPublisher messaging.PublisherModel) (*UserService, error) {
   service := &UserService{
 		store:       store,
 		ratingStore: ratingStore,
     subscriber: subscriber,
+    notificationPublisher: notificationPublisher,
 	}
 
   err := service.subscriber.Subscribe(service.ProminentUser)
@@ -105,13 +107,34 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 func (service *UserService) ProminentUser(host string) {
   reservation := getReservationClient()
 
+  user, err:= service.GetOne(host)
+  if err != nil {
+    return
+  }
+
   response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
 
   if err != nil {
     return
   }
 
-  service.store.UpdateProminent(isProminent(response), host)
+  prominent := isProminent(response)
+  if (user.IsProminent != prominent) {
+    service.store.UpdateProminent(prominent, host)
+
+    content := "You lost your prominent status"
+    if prominent {
+        content = "You gained the prominent status, congrats!"
+    }
+
+    service.notificationPublisher.Publish(messaging.NotificationMessage{
+      User: host,
+      Subject: "Your prominent status has changed!",
+      Content: content,
+      Type: messaging.ReservationRequest,
+    })
+  }
+
 }
 
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {

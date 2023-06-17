@@ -134,6 +134,7 @@ services:
       NATS_USER: ${NATS_USER}
       NATS_PASS: ${NATS_PASS}
       PROMINENT_HOST_SUBJECT: ${PROMINENT_HOST_SUBJECT}
+      NOTIFICATION_SUBJECT: ${NOTIFICATION_SUBJECT}
     depends_on:
       - users_db
     networks:
