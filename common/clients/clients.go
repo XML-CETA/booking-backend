@@ -3,6 +3,7 @@ package clients
 import (
 	"booking-backend/common/proto/accommodation_service"
 	"booking-backend/common/proto/auth_service"
+	"booking-backend/common/proto/notification_service"
 	"booking-backend/common/proto/reservation_service"
 	users_service "booking-backend/common/proto/user_service"
 	"log"
@@ -41,6 +42,14 @@ func NewReservationClient(address string) reservation_service.ReservationService
 		log.Fatalf("Failed to start gRPC connection to Reservation service: %v", err)
 	}
 	return reservation_service.NewReservationServiceClient(conn)
+}
+
+func NewNotificationClient(address string) notification_service.NotificationServiceClient {
+	conn, err := getConnection(address)
+	if err != nil {
+		log.Fatalf("Failed to start gRPC connection to Notification service: %v", err)
+	}
+	return notification_service.NewNotificationServiceClient(conn)
 }
 
 func getConnection(address string) (*grpc.ClientConn, error) {

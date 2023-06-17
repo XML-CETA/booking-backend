@@ -8,6 +8,7 @@ import (
 
 	"booking-backend/common/clients"
 	"booking-backend/common/messaging"
+	"booking-backend/common/proto/notification_service"
 	"booking-backend/common/proto/reservation_service"
 	pb "booking-backend/common/proto/user_service"
 	"booking-backend/user-service/domain"
@@ -43,7 +44,17 @@ func (service *UserService) Create(user domain.User) error {
 	if err == nil {
 		return errors.New("User with this username already exists")
 	}
-	return service.store.Create(user)
+	err = service.store.Create(user)
+
+  if err == nil {
+    notifications := getNotificationClient()
+    _, err = notifications.NewUserSettings(context.Background(),&notification_service.NewUserSettingsRequest{
+      Host: user.Email,
+      Role: user.Role,
+    })
+  }
+
+  return err
 }
 
 func (service *UserService) Delete(username string) error {
@@ -111,4 +122,8 @@ func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse
 
 func getReservationClient() reservation_service.ReservationServiceClient {
 	return clients.NewReservationClient(fmt.Sprintf("%s:%s", config.NewConfig().ReservationHost, config.NewConfig().ReservationPort))
+}
+
+func getNotificationClient() notification_service.NotificationServiceClient {
+	return clients.NewNotificationClient(fmt.Sprintf("%s:%s", config.NewConfig().NotificationHost, config.NewConfig().NotificationPort))
 }
