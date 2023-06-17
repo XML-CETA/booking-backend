@@ -35,8 +35,12 @@ func (h NotificationHandler) GetUserNotifications(ctx context.Context, request *
 		return nil, err
 	}
 
+  notifications, err := h.service.GetByUser(user)
+	if err != nil {
+		return nil, err
+	}
 
-  return toGrpcUserSettings(settings), nil
+  return toGrpcUserSettings(settings, notifications), nil
 }
 
 func (h NotificationHandler) NewUserSettings(ctx context.Context, request *notification_service.NewUserSettingsRequest) (*notification_service.NewUserSettingsResponse, error) {
@@ -58,9 +62,14 @@ func (h NotificationHandler) UpdateUserSettings(ctx context.Context, request *no
   response, err := h.service.UpdateUserSettings(user, request)
 	if err != nil {
 		return nil, err
+
+	}
+  notifications, err := h.service.GetByUser(user)
+	if err != nil {
+		return nil, err
 	}
 
-  return toGrpcUserSettings(response), nil
+  return toGrpcUserSettings(response, notifications), nil
 }
 
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
@@ -75,7 +84,7 @@ func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	return user.UserEmail, nil
 }
 
-func toGrpcUserSettings(settings domain.NotificationSettings) *notification_service.GetUserNotificationsResponse{
+func toGrpcUserSettings(settings domain.NotificationSettings, notifications []domain.Notification) *notification_service.GetUserNotificationsResponse{
   return &notification_service.GetUserNotificationsResponse{
       User: settings.User,
       Role: settings.Role,
@@ -85,6 +94,23 @@ func toGrpcUserSettings(settings domain.NotificationSettings) *notification_serv
       AccommodationRating: settings.AccommodationRating,
       ProminentStatusChange: settings.ProminentStatusChange,
       ReservationResponse: settings.ReservationResponse,
+      Notifications: toNotificationGrpcList(notifications),
   }
+}
 
+func toNotificationGrpcList(notifications []domain.Notification) ([]*notification_service.Notification) {
+	var converted []*notification_service.Notification
+
+	for _, entity := range notifications {
+		newRes := notification_service.Notification{
+			Id:            entity.Id.Hex(),
+      Subject: entity.Subject,
+      Content: entity.Content,
+      Viewed: entity.Viewed,
+		}
+
+		converted = append(converted, &newRes)
+	}
+
+	return converted
 }

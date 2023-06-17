@@ -28,5 +28,3 @@ func (p *Publisher) Publish(message interface{}) error {
 	return nil
 }
 
-
-

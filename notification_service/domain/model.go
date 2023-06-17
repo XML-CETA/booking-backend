@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 
 type NotificationSettings struct{
-  Id primitive.ObjectID `bson:"_id, omitempty"`
+  Id primitive.ObjectID `bson:"_id,omitempty"`
   User string
   Role string
   ReservationRequest bool
@@ -16,7 +16,7 @@ type NotificationSettings struct{
 }
 
 type Notification struct {
-  Id primitive.ObjectID `bson:"_id, omitempty"`
+  Id primitive.ObjectID `bson:"_id,omitempty"`
   User string
   Subject string
   Content string

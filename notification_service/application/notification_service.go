@@ -1,21 +1,33 @@
 package application
 
 import (
+	"booking-backend/common/messaging"
 	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/domain"
 	"errors"
+	"log"
 )
 
 type NotificationService struct {
 	notificationSettings domain.NotificationSettingsStore
 	notifications domain.NotificationStore
+  subscriber messaging.SubscriberModel
 }
 
-func NewNotificationService(storeSettings domain.NotificationSettingsStore, notifications domain.NotificationStore) *NotificationService {
-	return &NotificationService{
+func NewNotificationService(storeSettings domain.NotificationSettingsStore, notifications domain.NotificationStore, subscriber messaging.SubscriberModel) (*NotificationService, error) {
+  service := &NotificationService{
 		notificationSettings: storeSettings,
     notifications: notifications,
+    subscriber: subscriber,
 	}
+
+  err := service.subscriber.Subscribe(service.ProcessNotification)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return service, nil
 }
 
 func (service *NotificationService) NewUserSettings(host string, role string) error {
@@ -38,4 +50,44 @@ func (service *NotificationService) UpdateUserSettings(host string, body *notifi
   }
 
   return service.GetUserSettings(host)
+}
+
+func (service *NotificationService) GetByUser(user string) ([]domain.Notification, error) {
+  return service.notifications.GetAllByUser(user)
+}
+
+func (service *NotificationService) ProcessNotification(notification messaging.NotificationMessage) {
+  settings, err := service.GetUserSettings(notification.User)
+  if err != nil {
+    return
+  }
+
+  var shouldPush bool
+
+  switch notification.Type {
+  case messaging.ReservationRequest:
+    shouldPush = settings.ReservationRequest
+  case messaging.ReservationCancel:
+    shouldPush = settings.ReservationCancel
+  case messaging.PersonalRating:
+    shouldPush = settings.PersonalRating
+  case messaging.AccommodationRating:
+    shouldPush = settings.AccommodationRating
+  case messaging.ProminentStatusChange:
+    shouldPush = settings.ProminentStatusChange
+  case messaging.ReservationResponse:
+    shouldPush = settings.ReservationResponse
+  default:
+    shouldPush = false
+  }
+
+
+  if shouldPush {
+    service.notifications.Create(domain.Notification{
+      User: notification.User,
+      Subject: notification.Subject,
+      Content: notification.Content,
+      Viewed: false,
+    })
+  }
 }

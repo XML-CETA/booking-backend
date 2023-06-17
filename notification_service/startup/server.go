@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"booking-backend/common/messaging"
 	"booking-backend/common/proto/notification_service"
 	"booking-backend/notification_service/application"
 	"booking-backend/notification_service/domain"
@@ -13,6 +14,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+)
+
+const (
+  QueueGroup = "notification_service"
 )
 
 type Server struct {
@@ -31,7 +36,9 @@ func (server *Server) Start() {
   notificationSettings := server.initNotificationSettingsStore(mongoClient)
   notifications := server.initNotificationStore(mongoClient)
 
-  notificationService := server.initNotificationService(notificationSettings, notifications)
+  subscriber := server.initSubscriber(server.config.NotificationSubject, QueueGroup)
+
+  notificationService := server.initNotificationService(notificationSettings, notifications, subscriber)
 
   notificationHandler := server.initNotificationHandler(notificationService)
 
@@ -56,8 +63,14 @@ func (server *Server) initNotificationStore(client *mongo.Client) domain.Notific
 	return store
 }
 
-func (server *Server) initNotificationService(storeSettings domain.NotificationSettingsStore, notifications domain.NotificationStore) *application.NotificationService {
-	return application.NewNotificationService(storeSettings, notifications)
+func (server *Server) initNotificationService(storeSettings domain.NotificationSettingsStore, notifications domain.NotificationStore, subscriber messaging.SubscriberModel) *application.NotificationService {
+  service, err := application.NewNotificationService(storeSettings, notifications, subscriber)
+
+  if err != nil {
+    log.Fatal("Could not instanciate notification service")
+  }
+
+  return service
 }
 
 func (server *Server) initNotificationHandler(service *application.NotificationService) *api.NotificationHandler {
@@ -74,4 +87,14 @@ func (server *Server) startGrpcServer(handler *api.NotificationHandler) {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) messaging.SubscriberModel {
+	subscriber, err := messaging.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
 }

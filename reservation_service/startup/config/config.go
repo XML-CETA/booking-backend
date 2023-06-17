@@ -15,6 +15,7 @@ type Config struct {
 	NatsUser                  string
 	NatsPass                  string
   ProminentHostSubject string
+  NotificationSubject string
 }
 
 func NewConfig() *Config {
@@ -31,5 +32,6 @@ func NewConfig() *Config {
 		NatsUser:                  os.Getenv("NATS_USER"),
 		NatsPass:                  os.Getenv("NATS_PASS"),
     ProminentHostSubject: os.Getenv("PROMINENT_HOST_SUBJECT"),
+    NotificationSubject: os.Getenv("NOTIFICATION_SUBJECT"),
 	}
 }

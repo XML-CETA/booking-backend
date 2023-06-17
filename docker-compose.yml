@@ -83,6 +83,7 @@ services:
       NATS_USER: ${NATS_USER}
       NATS_PASS: ${NATS_PASS}
       PROMINENT_HOST_SUBJECT: ${PROMINENT_HOST_SUBJECT}
+      NOTIFICATION_SUBJECT: ${NOTIFICATION_SUBJECT}
     depends_on:
       - reservation_db
     networks:
@@ -105,6 +106,7 @@ services:
       NATS_PORT: ${NATS_PORT}
       NATS_USER: ${NATS_USER}
       NATS_PASS: ${NATS_PASS}
+      NOTIFICATION_SUBJECT: ${NOTIFICATION_SUBJECT}
     depends_on:
       - notification_db
     networks:
