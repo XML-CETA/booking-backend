@@ -42,6 +42,19 @@ func (h RatingHandler) CreateAccommodationRate(ctx context.Context, request *pb.
 	}, nil
 }
 
+func (h RatingHandler) CreateUserRating(ctx context.Context, request *pb.RateUserRequest) (*pb.RateResponse, error) {
+	rating := domain.MakeRating(request)
+	err := h.service.CreateUserRate(&rating)
+	if err != nil {
+		return &pb.RateResponse{
+			Data: fmt.Sprintf(err.Error()),
+		}, err
+	}
+	return &pb.RateResponse{
+		Data: fmt.Sprintf("Created rating."),
+	}, nil
+}
+
 func (h RatingHandler) UpdateAccommodationRate(ctx context.Context, request *pb.RatingAccommodationRequest) (*pb.RateResponse, error) {
 	user, err := Authorize(ctx, "REGULAR")
 	if err != nil {
@@ -82,6 +95,14 @@ func (h RatingHandler) GetAllAccommodationRates(ctx context.Context, request *pb
 		return nil, err
 	}
 
+	return rates, nil
+}
+
+func (h RatingHandler) GetHostRates(ctx context.Context, request *pb.HostRatesRequest) (*pb.HostRatesResponse, error) {
+	rates, err := h.service.GetHostRates(request.Id)
+	if err != nil {
+		return nil, err
+	}
 	return rates, nil
 }
 

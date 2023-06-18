@@ -18,14 +18,14 @@ import (
 type ReservationService struct {
 	store                  domain.ReservationStore
 	prominentHostPublisher messaging.PublisherModel
-  notificationPublisher messaging.PublisherModel
+	notificationPublisher  messaging.PublisherModel
 }
 
 func NewReservationService(store domain.ReservationStore, prominentHostPublisher messaging.PublisherModel, notificationPublisher messaging.PublisherModel) *ReservationService {
 	return &ReservationService{
 		store:                  store,
 		prominentHostPublisher: prominentHostPublisher,
-    notificationPublisher: notificationPublisher,
+		notificationPublisher:  notificationPublisher,
 	}
 }
 
@@ -49,26 +49,26 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 		reservation.Status = domain.Reserved
 	}
 
-  reservation.Duration, err= calculateDuration(reservation.DateFrom, reservation.DateTo)
+	reservation.Duration, err = calculateDuration(reservation.DateFrom, reservation.DateTo)
 
 	if err != nil {
 		return err
 	}
 
-  err =  service.store.CreateReservation(reservation)
+	err = service.store.CreateReservation(reservation)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
 
-    service.notificationPublisher.Publish(messaging.NotificationMessage{
-      User: reservation.Host,
-      Subject: "You have a new reservation request!",
-      Content: fmt.Sprintf("%v requested for a reservation on accommodation with id: %v", reservation.User, reservation.Accommodation),
-      Type: messaging.ReservationRequest,
-    })
-  }
+		service.notificationPublisher.Publish(messaging.NotificationMessage{
+			User:    reservation.Host,
+			Subject: "You have a new reservation request!",
+			Content: fmt.Sprintf("%v requested for a reservation on accommodation with id: %v", reservation.User, reservation.Accommodation),
+			Type:    messaging.ReservationRequest,
+		})
+	}
 
-  return err
+	return err
 }
 
 func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
@@ -90,20 +90,28 @@ func (service *ReservationService) ConfirmReservation(reservationId string) erro
 		return err
 	}
 
-  err = service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+	err = service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
 
-    service.notificationPublisher.Publish(messaging.NotificationMessage{
-      User: reservation.User,
-      Subject: "Your reservation has been approved!",
-      Content: fmt.Sprintf("Reservation lasting from %v to %v has been approved!", reservation.DateFrom, reservation.DateTo),
-      Type: messaging.ReservationResponse,
-    })
-  }
+		service.notificationPublisher.Publish(messaging.NotificationMessage{
+			User:    reservation.User,
+			Subject: "Your reservation has been approved!",
+			Content: fmt.Sprintf("Reservation lasting from %v to %v has been approved!", reservation.DateFrom, reservation.DateTo),
+			Type:    messaging.ReservationResponse,
+		})
+	}
 
-  return err
+	return err
+}
+
+func (service *ReservationService) CheckIfUserVisitedHost(user, host string) (bool, error) {
+	reservations, err := service.store.GetByUserAndHost(user, host)
+	if err != nil {
+		return false, err
+	}
+	return len(reservations) >= 1, nil
 }
 
 func (service *ReservationService) Delete(reservationId string, user string) error {
@@ -124,18 +132,18 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 
 	err = service.store.Cancel(id)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
 
-    service.notificationPublisher.Publish(messaging.NotificationMessage{
-      User: reservation.Host,
-      Subject: "A reservation has been canceled!",
-      Content: fmt.Sprintf("Reservation lasting from %v to %v has been canceled :(", reservation.DateFrom, reservation.DateTo),
-      Type: messaging.ReservationCancel,
-    })
-  }
+		service.notificationPublisher.Publish(messaging.NotificationMessage{
+			User:    reservation.Host,
+			Subject: "A reservation has been canceled!",
+			Content: fmt.Sprintf("Reservation lasting from %v to %v has been canceled :(", reservation.DateFrom, reservation.DateTo),
+			Type:    messaging.ReservationCancel,
+		})
+	}
 
-  return err
+	return err
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -210,7 +218,7 @@ func (service *ReservationService) GetExpiredCount(host string) (int32, error) {
 }
 
 func (service *ReservationService) GetIntervalCount(host string) (int32, error) {
-  return service.store.GetHostIntervalSum(host)
+	return service.store.GetHostIntervalSum(host)
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
@@ -263,7 +271,7 @@ func calculateDuration(dateFromString, dateToString string) (int32, error) {
 		return 0, err
 	}
 
-  difference := dateTo.Sub(dateFrom)
+	difference := dateTo.Sub(dateFrom)
 
-  return int32(difference.Hours() / 24), nil
+	return int32(difference.Hours() / 24), nil
 }

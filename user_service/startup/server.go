@@ -18,7 +18,7 @@ import (
 )
 
 const (
-  QueueGroup = "user_service"
+	QueueGroup = "user_service"
 )
 
 type Server struct {
@@ -36,12 +36,16 @@ func (server *Server) Start() {
 
 	userStore := server.initUserStore(mongoClient)
 
-	ratingStore := server.initRatingStore(mongoClient)
+	subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
 
+<<<<<<< HEAD
   subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
   publisher := server.initPublisher(server.config.NotificationSubject)
 
 	userService := server.initUserService(userStore, ratingStore, subscriber, publisher)
+=======
+	userService := server.initUserService(userStore, subscriber)
+>>>>>>> 3be3f21 (Implemented saga)
 
 	userHandler := server.initUserHandler(userService)
 
@@ -61,19 +65,19 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	return store
 }
 
-func (server *Server) initRatingStore(client *mongo.Client) domain.RatingStore {
-	ratingStore := persistence.NewRatingMongoDBStore(client)
-	return ratingStore
-}
+func (server *Server) initUserService(store domain.UserStore, subscriber messaging.SubscriberModel) *application.UserService {
+	service, err := application.NewUserService(store, subscriber)
 
+<<<<<<< HEAD
 func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, publisher messaging.PublisherModel) *application.UserService {
   service, err := application.NewUserService(store, ratingStore, subscriber, publisher)
+=======
+	if err != nil {
+		log.Fatalf("Failed to start service %v", err)
+	}
+>>>>>>> 3be3f21 (Implemented saga)
 
-  if err != nil {
-    log.Fatalf("Failed to start service %v", err)
-  }
-
-  return service
+	return service
 }
 
 func (server *Server) initUserHandler(service *application.UserService) *api.UserHandler {

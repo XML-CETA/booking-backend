@@ -16,6 +16,7 @@ import (
 )
 
 type UserService struct {
+<<<<<<< HEAD
 	store       domain.UserStore
 	ratingStore domain.RatingStore
   subscriber  messaging.SubscriberModel
@@ -28,17 +29,27 @@ func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subs
 		ratingStore: ratingStore,
     subscriber: subscriber,
     notificationPublisher: notificationPublisher,
+=======
+	store      domain.UserStore
+	subscriber messaging.SubscriberModel
+}
+
+func NewUserService(store domain.UserStore, subscriber messaging.SubscriberModel) (*UserService, error) {
+	service := &UserService{
+		store:      store,
+		subscriber: subscriber,
+>>>>>>> 3be3f21 (Implemented saga)
 	}
 
-  err := service.subscriber.Subscribe(service.ProminentUser)
+	err := service.subscriber.Subscribe(service.ProminentUser)
 
-  log.Printf("%v", err)
+	log.Printf("%v", err)
 
-  if err != nil {
-    return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  return service, nil
+	return service, nil
 }
 
 func (service *UserService) Create(user domain.User) error {
@@ -71,10 +82,6 @@ func (service *UserService) GetOne(email string) (domain.User, error) {
 	return service.store.GetOne(email)
 }
 
-func (service *UserService) RateUser(rating domain.Rating) error {
-	return service.ratingStore.Create(rating)
-}
-
 func (service *UserService) LoginCheck(email string, password string) (pb.User, error) {
 	user, err := service.store.GetOne(email)
 	userRPC := service.UserToRPC(user)
@@ -105,19 +112,24 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 }
 
 func (service *UserService) ProminentUser(host string) {
-  reservation := getReservationClient()
+	reservation := getReservationClient()
 
+<<<<<<< HEAD
   user, err:= service.GetOne(host)
   if err != nil {
     return
   }
 
   response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
+=======
+	response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
+>>>>>>> 3be3f21 (Implemented saga)
 
-  if err != nil {
-    return
-  }
+	if err != nil {
+		return
+	}
 
+<<<<<<< HEAD
   prominent := isProminent(response)
   if (user.IsProminent != prominent) {
     service.store.UpdateProminent(prominent, host)
@@ -135,12 +147,15 @@ func (service *UserService) ProminentUser(host string) {
     })
   }
 
+=======
+	service.store.UpdateProminent(isProminent(response), host)
+>>>>>>> 3be3f21 (Implemented saga)
 }
 
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
-  return reservationAnalytics.CancelRate < 5.0 &&
-        reservationAnalytics.ExpiredCount >= 5 &&
-        reservationAnalytics.IntervalCount > 50
+	return reservationAnalytics.CancelRate < 5.0 &&
+		reservationAnalytics.ExpiredCount >= 5 &&
+		reservationAnalytics.IntervalCount > 50
 }
 
 func getReservationClient() reservation_service.ReservationServiceClient {

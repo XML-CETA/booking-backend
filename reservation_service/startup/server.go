@@ -16,6 +16,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	QueueGroup = "reservation_service"
+)
+
 type Server struct {
 	config *config.Config
 }
@@ -31,10 +35,14 @@ func (server *Server) Start() {
 
 	reservationStore := server.initReservationStore(mongoClient)
 
-  publisher := server.initPublisher(server.config.ProminentHostSubject)
-  notificationPublisher := server.initPublisher(server.config.NotificationSubject)
+	publisher := server.initPublisher(server.config.ProminentHostSubject)
+	notificationPublisher := server.initPublisher(server.config.NotificationSubject)
 
 	reservationService := server.initReservationService(reservationStore, publisher, notificationPublisher)
+
+	commandSubscriber := server.initSubscriber(server.config.RateUserCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.RateUserReplySubject)
+	server.initRateUserHandler(reservationService, replyPublisher, commandSubscriber)
 
 	reservationHandler := server.initReservationHandler(reservationService)
 
@@ -74,6 +82,13 @@ func (server *Server) startGrpcServer(productHandler *api.ReservationHandler) {
 	}
 }
 
+func (server *Server) initRateUserHandler(service *application.ReservationService, publisher messaging.PublisherModel, subscriber messaging.SubscriberModel) {
+	_, err := api.NewRateUserCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (server *Server) initPublisher(subject string) messaging.PublisherModel {
 	publisher, err := messaging.NewNATSPublisher(
 		server.config.NatsHost, server.config.NatsPort,
@@ -82,4 +97,14 @@ func (server *Server) initPublisher(subject string) messaging.PublisherModel {
 		log.Fatal(err)
 	}
 	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) messaging.SubscriberModel {
+	subscriber, err := messaging.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
 }
