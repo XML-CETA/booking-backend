@@ -62,7 +62,7 @@ func (service *RatingService) CreateUserRate(rating *domain.RatingUser) error {
 	}
 	err = service.orchestrator.Start(rating)
 	if err != nil {
-		_ = service.rateUserStore.UpdateStatus(rating.RatedUser, rating.RatedBy, domain.Canceled)
+		_ = service.rateUserStore.UpdateStatus(rating.Id, domain.Canceled)
 		return err
 	}
 	return nil
@@ -88,8 +88,8 @@ func (service *RatingService) GetHostRates(host string) (*pb.HostRatesResponse, 
 	}, err
 }
 
-func (service *RatingService) UpdateStatus(host, user string, status domain.Status) error {
-	return service.rateUserStore.UpdateStatus(host, user, status)
+func (service *RatingService) UpdateStatus(id primitive.ObjectID, status domain.Status) error {
+	return service.rateUserStore.UpdateStatus(id, status)
 }
 
 func (service *RatingService) UpdateAccommodationRate(updateRate domain.RatingAccommodation) error {

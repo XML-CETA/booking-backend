@@ -54,10 +54,10 @@ func (store *RatingUserMongoDBStore) GetByHostAndUser(host, user string, id prim
 	return result, err
 }
 
-func (store *RatingUserMongoDBStore) UpdateStatus(host, user string, status domain.Status) error {
+func (store *RatingUserMongoDBStore) UpdateStatus(id primitive.ObjectID, status domain.Status) error {
 	result, err := store.ratings.UpdateOne(
 		context.TODO(),
-		bson.M{"ratedUser": host, "ratedBy": user},
+		bson.M{"_id": id},
 		bson.D{
 			{"$set", bson.D{{"status", status}}},
 		},

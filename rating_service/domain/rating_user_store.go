@@ -6,7 +6,7 @@ import (
 
 type RatingUserStore interface {
 	Create(rating *RatingUser) (primitive.ObjectID, error)
-	UpdateStatus(host, user string, status Status) error
+	UpdateStatus(id primitive.ObjectID, status Status) error
 	GetHostRates(host string) ([]RatingUser, error)
 	GetByHostAndUser(host, user string, id primitive.ObjectID) (RatingUser, error)
 }

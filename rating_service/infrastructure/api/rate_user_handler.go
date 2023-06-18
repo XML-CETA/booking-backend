@@ -5,6 +5,7 @@ import (
 	events "booking-backend/common/saga/rate_user"
 	"booking-backend/rating-service/application"
 	"booking-backend/rating-service/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type RateUserCommandHandler struct {
@@ -27,7 +28,7 @@ func NewRateUserCommandHandler(ratingService *application.RatingService, publish
 }
 
 func (handler *RateUserCommandHandler) handle(command *events.RateUserCommand) {
-
+	id, _ := primitive.ObjectIDFromHex(command.Rating.Id)
 	reply := events.RateUserReply{Rating: command.Rating}
 	switch command.Type {
 	case events.CheckUserRateExists:
@@ -38,14 +39,14 @@ func (handler *RateUserCommandHandler) handle(command *events.RateUserCommand) {
 		}
 		reply.Type = events.UserRateDoesntExists
 	case events.ApproveRating:
-		err := handler.ratingService.UpdateStatus(command.Rating.RatedUser, command.Rating.RatedBy, domain.Approved)
+		err := handler.ratingService.UpdateStatus(id, domain.Approved)
 
 		if err != nil {
 			return
 		}
 		reply.Type = events.RatingApproved
 	case events.CancelRating:
-		err := handler.ratingService.UpdateStatus(command.Rating.RatedUser, command.Rating.RatedBy, domain.Canceled)
+		err := handler.ratingService.UpdateStatus(id, domain.Canceled)
 		if err != nil {
 			return
 		}
