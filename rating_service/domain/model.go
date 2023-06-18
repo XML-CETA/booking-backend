@@ -80,7 +80,6 @@ func UserRatingToGrpcRate(rating RatingUser) pb.UserRating {
 func MakeRating(rating *pb.RateUserRequest) RatingUser {
 	return RatingUser{
 		Rate:      rating.Rate,
-		RatedBy:   rating.RatedBy,
 		RatedUser: rating.RatedUser,
 		Date:      time.Now().Format("2006-01-02"),
 	}

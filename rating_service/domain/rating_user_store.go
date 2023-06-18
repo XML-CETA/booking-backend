@@ -10,4 +10,5 @@ type RatingUserStore interface {
 	GetHostRates(host string) ([]RatingUser, error)
 	GetByHostAndUser(host, user string, id primitive.ObjectID) (RatingUser, error)
 	Update(host, user string, rate int32) error
+	Delete(host, user string) error
 }

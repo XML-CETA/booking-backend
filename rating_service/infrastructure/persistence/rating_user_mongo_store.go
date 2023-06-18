@@ -54,6 +54,16 @@ func (store *RatingUserMongoDBStore) Update(host, user string, rate int32) error
 	return err
 }
 
+func (store *RatingUserMongoDBStore) Delete(host, user string) error {
+	filter := bson.D{
+		{Key: "ratedUser", Value: host},
+		{Key: "ratedBy", Value: user},
+		{Key: "status", Value: domain.Approved},
+	}
+	_, err := store.ratings.DeleteOne(context.Background(), filter)
+	return err
+}
+
 func (store *RatingUserMongoDBStore) GetByHostAndUser(host, user string, id primitive.ObjectID) (domain.RatingUser, error) {
 	filter := bson.D{
 		{Key: "_id", Value: bson.D{{Key: "$ne", Value: id}}},

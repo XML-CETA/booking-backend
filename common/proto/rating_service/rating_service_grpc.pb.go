@@ -27,6 +27,8 @@ const (
 	RatingService_CreateUserRating_FullMethodName            = "/RatingService/CreateUserRating"
 	RatingService_GetHostRates_FullMethodName                = "/RatingService/GetHostRates"
 	RatingService_UpdateUserRating_FullMethodName            = "/RatingService/UpdateUserRating"
+	RatingService_DeleteUserRating_FullMethodName            = "/RatingService/DeleteUserRating"
+	RatingService_GetAverageUserRating_FullMethodName        = "/RatingService/GetAverageUserRating"
 )
 
 // RatingServiceClient is the client API for RatingService service.
@@ -41,6 +43,8 @@ type RatingServiceClient interface {
 	CreateUserRating(ctx context.Context, in *RateUserRequest, opts ...grpc.CallOption) (*RateResponse, error)
 	GetHostRates(ctx context.Context, in *HostRatesRequest, opts ...grpc.CallOption) (*HostRatesResponse, error)
 	UpdateUserRating(ctx context.Context, in *UpdateUserRatingRequest, opts ...grpc.CallOption) (*RateResponse, error)
+	DeleteUserRating(ctx context.Context, in *DeleteUserRatingRequest, opts ...grpc.CallOption) (*RateResponse, error)
+	GetAverageUserRating(ctx context.Context, in *HostRatesRequest, opts ...grpc.CallOption) (*AverageUserRatingResponse, error)
 }
 
 type ratingServiceClient struct {
@@ -123,6 +127,24 @@ func (c *ratingServiceClient) UpdateUserRating(ctx context.Context, in *UpdateUs
 	return out, nil
 }
 
+func (c *ratingServiceClient) DeleteUserRating(ctx context.Context, in *DeleteUserRatingRequest, opts ...grpc.CallOption) (*RateResponse, error) {
+	out := new(RateResponse)
+	err := c.cc.Invoke(ctx, RatingService_DeleteUserRating_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ratingServiceClient) GetAverageUserRating(ctx context.Context, in *HostRatesRequest, opts ...grpc.CallOption) (*AverageUserRatingResponse, error) {
+	out := new(AverageUserRatingResponse)
+	err := c.cc.Invoke(ctx, RatingService_GetAverageUserRating_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RatingServiceServer is the server API for RatingService service.
 // All implementations must embed UnimplementedRatingServiceServer
 // for forward compatibility
@@ -135,6 +157,8 @@ type RatingServiceServer interface {
 	CreateUserRating(context.Context, *RateUserRequest) (*RateResponse, error)
 	GetHostRates(context.Context, *HostRatesRequest) (*HostRatesResponse, error)
 	UpdateUserRating(context.Context, *UpdateUserRatingRequest) (*RateResponse, error)
+	DeleteUserRating(context.Context, *DeleteUserRatingRequest) (*RateResponse, error)
+	GetAverageUserRating(context.Context, *HostRatesRequest) (*AverageUserRatingResponse, error)
 	mustEmbedUnimplementedRatingServiceServer()
 }
 
@@ -165,6 +189,12 @@ func (UnimplementedRatingServiceServer) GetHostRates(context.Context, *HostRates
 }
 func (UnimplementedRatingServiceServer) UpdateUserRating(context.Context, *UpdateUserRatingRequest) (*RateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserRating not implemented")
+}
+func (UnimplementedRatingServiceServer) DeleteUserRating(context.Context, *DeleteUserRatingRequest) (*RateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserRating not implemented")
+}
+func (UnimplementedRatingServiceServer) GetAverageUserRating(context.Context, *HostRatesRequest) (*AverageUserRatingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAverageUserRating not implemented")
 }
 func (UnimplementedRatingServiceServer) mustEmbedUnimplementedRatingServiceServer() {}
 
@@ -323,6 +353,42 @@ func _RatingService_UpdateUserRating_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RatingService_DeleteUserRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserRatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RatingServiceServer).DeleteUserRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RatingService_DeleteUserRating_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RatingServiceServer).DeleteUserRating(ctx, req.(*DeleteUserRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RatingService_GetAverageUserRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HostRatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RatingServiceServer).GetAverageUserRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RatingService_GetAverageUserRating_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RatingServiceServer).GetAverageUserRating(ctx, req.(*HostRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RatingService_ServiceDesc is the grpc.ServiceDesc for RatingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -361,6 +427,14 @@ var RatingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateUserRating",
 			Handler:    _RatingService_UpdateUserRating_Handler,
+		},
+		{
+			MethodName: "DeleteUserRating",
+			Handler:    _RatingService_DeleteUserRating_Handler,
+		},
+		{
+			MethodName: "GetAverageUserRating",
+			Handler:    _RatingService_GetAverageUserRating_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

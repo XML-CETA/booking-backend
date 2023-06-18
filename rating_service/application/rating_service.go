@@ -72,6 +72,10 @@ func (service *RatingService) UpdateUserRating(host, user string, rate int32) er
 	return service.rateUserStore.Update(host, user, rate)
 }
 
+func (service *RatingService) DeleteUserRating(host, user string) error {
+	return service.rateUserStore.Delete(host, user)
+}
+
 func (service *RatingService) RateAlreadyExists(host, user, id string) (bool, error) {
 	ratingId, err := primitive.ObjectIDFromHex(id)
 	_, err = service.rateUserStore.GetByHostAndUser(host, user, ratingId)
@@ -139,6 +143,16 @@ func (service *RatingService) GetAllAccommodationRates(accommodationId string) (
 	}, nil
 }
 
+func (service *RatingService) GetAverageUserRate(host string) (*pb.AverageUserRatingResponse, error) {
+	rates, err := service.rateUserStore.GetHostRates(host)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AverageUserRatingResponse{
+		Average: averageUserRate(rates),
+	}, nil
+}
+
 func (service *RatingService) GetAverageAccommodationRate(accommodationId string) (*pb.AverageRateAccommodationResponse, error) {
 	rates, err := service.rateAccommodationStore.GetAllByAccommodation(accommodationId)
 	if err != nil {
@@ -151,6 +165,21 @@ func (service *RatingService) GetAverageAccommodationRate(accommodationId string
 }
 
 func getAverageRate(rates []domain.RatingAccommodation) float32 {
+	var converted float32 = 0
+	var counter float32 = 0
+
+	for _, entity := range rates {
+		converted += float32(entity.Rate)
+		counter++
+	}
+
+	if counter == 0 {
+		return 0
+	}
+	return converted / counter
+}
+
+func averageUserRate(rates []domain.RatingUser) float32 {
 	var converted float32 = 0
 	var counter float32 = 0
 
