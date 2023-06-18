@@ -9,4 +9,5 @@ type RatingUserStore interface {
 	UpdateStatus(id primitive.ObjectID, status Status) error
 	GetHostRates(host string) ([]RatingUser, error)
 	GetByHostAndUser(host, user string, id primitive.ObjectID) (RatingUser, error)
+	Update(host, user string, rate int32) error
 }

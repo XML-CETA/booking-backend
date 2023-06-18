@@ -68,6 +68,10 @@ func (service *RatingService) CreateUserRate(rating *domain.RatingUser) error {
 	return nil
 }
 
+func (service *RatingService) UpdateUserRating(host, user string, rate int32) error {
+	return service.rateUserStore.Update(host, user, rate)
+}
+
 func (service *RatingService) RateAlreadyExists(host, user, id string) (bool, error) {
 	ratingId, err := primitive.ObjectIDFromHex(id)
 	_, err = service.rateUserStore.GetByHostAndUser(host, user, ratingId)

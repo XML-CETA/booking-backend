@@ -9,7 +9,6 @@ import (
 	"booking-backend/rating-service/startup/config"
 	"context"
 	"fmt"
-
 	"google.golang.org/grpc/metadata"
 )
 
@@ -52,6 +51,18 @@ func (h RatingHandler) CreateUserRating(ctx context.Context, request *pb.RateUse
 	}
 	return &pb.RateResponse{
 		Data: fmt.Sprintf("Created rating."),
+	}, nil
+}
+
+func (h RatingHandler) UpdateUserRating(ctx context.Context, request *pb.UpdateUserRatingRequest) (*pb.RateResponse, error) {
+	err := h.service.UpdateUserRating(request.RatedUser, request.RatedBy, request.Rate)
+	if err != nil {
+		return &pb.RateResponse{
+			Data: fmt.Sprintf(err.Error()),
+		}, err
+	}
+	return &pb.RateResponse{
+		Data: fmt.Sprintf("Rating changed"),
 	}, nil
 }
 

@@ -42,6 +42,18 @@ func (store *RatingUserMongoDBStore) GetHostRates(host string) ([]domain.RatingU
 	return ratings, err
 }
 
+func (store *RatingUserMongoDBStore) Update(host, user string, rate int32) error {
+	filter := bson.D{
+		{Key: "ratedUser", Value: host},
+		{Key: "ratedBy", Value: user},
+		{Key: "status", Value: domain.Approved},
+	}
+	_, err := store.ratings.UpdateOne(context.Background(), filter, bson.D{{Key: "$set", Value: bson.D{
+		{Key: "rate", Value: rate},
+	}}})
+	return err
+}
+
 func (store *RatingUserMongoDBStore) GetByHostAndUser(host, user string, id primitive.ObjectID) (domain.RatingUser, error) {
 	filter := bson.D{
 		{Key: "_id", Value: bson.D{{Key: "$ne", Value: id}}},

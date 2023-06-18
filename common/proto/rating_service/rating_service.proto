@@ -47,6 +47,12 @@ service RatingService {
         get: "/ratings/host/{id}"
       };
     }
+    rpc UpdateUserRating(UpdateUserRatingRequest) returns (RateResponse){
+      option (google.api.http) = {
+        put: "/ratings/user"
+        body: "*"
+      };
+    }
 
 }
 
@@ -78,6 +84,12 @@ message HostRatesRequest{
 
 message HostRatesResponse{
   repeated UserRating ratings = 1;
+}
+
+message UpdateUserRatingRequest {
+  string ratedUser = 1;
+  string ratedBy = 2;
+  int32 rate = 3;
 }
   
 message RateAccommodationIdRequest{
