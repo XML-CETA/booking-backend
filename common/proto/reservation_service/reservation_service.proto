@@ -33,6 +33,8 @@ service ReservationService {
 	}
   rpc GetHostAnalytics(HostAnalyticsRequest) returns (HostAnalyticsResponse) {
 	}
+  rpc HasLeftoverReservations(LeftoverReservationsRequest) returns (LeftoverReservationsResponse) {
+	}
 }
 
 message ReservationCreateRequest {
@@ -107,4 +109,13 @@ message HostAnalyticsResponse {
   float cancelRate = 1;
   int32 expiredCount = 2;
   int32 intervalCount = 3;
+}
+
+message LeftoverReservationsRequest {
+  string role = 1;
+  string user = 2;
+}
+
+message LeftoverReservationsResponse {
+  bool canDelete = 1;
 }

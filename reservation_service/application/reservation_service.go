@@ -221,6 +221,15 @@ func (service *ReservationService) GetIntervalCount(host string) (int32, error) 
 	return service.store.GetHostIntervalSum(host)
 }
 
+func (service *ReservationService) HasActiveReservations(user string, role string) (bool, error) {
+  count, err := service.store.CountActive(user, role)
+  if err != nil {
+    return false, err
+  }
+
+  return count > 0, nil
+}
+
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
 	return clients.NewAccommodationClient(fmt.Sprintf("%s:%s", config.NewConfig().AccommodationServiceHost, config.NewConfig().AccommodationServicePort))
 }

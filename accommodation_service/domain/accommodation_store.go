@@ -8,4 +8,5 @@ type AccommodationStore interface {
 	Update(accommodation Accommodation) error
 	Delete(id primitive.ObjectID) error
 	GetById(id primitive.ObjectID) (*Accommodation, error)
+  DeleteAllByHost(host string) error
 }

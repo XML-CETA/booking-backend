@@ -120,6 +120,18 @@ func (h ReservationHandler) GetHostAnalytics(ctx context.Context, request *pb.Ho
 	}, nil
 }
 
+func (h ReservationHandler) HasLeftoverReservations(ctx context.Context, request *pb.LeftoverReservationsRequest) (*pb.LeftoverReservationsResponse, error) {
+  hasActiveReservations ,err := h.service.HasActiveReservations(request.User, request.Role)
+
+	if err != nil {
+		return nil, err
+	}
+
+  return &pb.LeftoverReservationsResponse{
+    CanDelete: !hasActiveReservations,
+  }, nil
+}
+
 func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)

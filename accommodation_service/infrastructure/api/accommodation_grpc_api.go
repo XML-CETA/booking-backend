@@ -175,6 +175,14 @@ func (handler *AccommodationHandler) IsAutomaticConfirmation(ctx context.Context
 	return &pb.IsAutomaticConfirmationResponse{IsAutomaticConfirmation: isAutomatic}, nil
 }
 
+func (handler *AccommodationHandler) DeleteHostAccommodations(ctx context.Context, request *pb.DeleteHostAccommodationsRequest) (*pb.DeleteHostAccommodationsResponse, error) {
+  err := handler.service.DeleteAllByHost(request.Host)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteHostAccommodationsResponse{
+	}, nil
+}
 func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
