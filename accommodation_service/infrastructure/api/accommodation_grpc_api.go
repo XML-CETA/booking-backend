@@ -50,7 +50,7 @@ func (handler *AccommodationHandler) GetById(ctx context.Context, request *pb.Ac
 }
 
 func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.AccommodationCreateRequest) (*pb.Response, error) {
-	user, err := Authorize(ctx, "HOST")
+	user, err := Authorize(ctx, []string{"HOST"})
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (handler *AccommodationHandler) IsAutomaticConfirmation(ctx context.Context
 	return &pb.IsAutomaticConfirmationResponse{IsAutomaticConfirmation: isAutomatic}, nil
 }
 
-func Authorize(ctx context.Context, roleGuard string) (string, error) {
+func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})

@@ -24,7 +24,7 @@ func NewRatingHandler(service *application.RatingService) *RatingHandler {
 }
 
 func (h RatingHandler) CreateAccommodationRate(ctx context.Context, request *pb.RatingAccommodationRequest) (*pb.RateResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (h RatingHandler) CreateAccommodationRate(ctx context.Context, request *pb.
 }
 
 func (h RatingHandler) CreateUserRating(ctx context.Context, request *pb.RateUserRequest) (*pb.RateResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	rating := domain.MakeRating(request)
 	rating.RatedBy = user
 	err = h.service.CreateUserRate(&rating)
@@ -57,7 +57,7 @@ func (h RatingHandler) CreateUserRating(ctx context.Context, request *pb.RateUse
 }
 
 func (h RatingHandler) UpdateUserRating(ctx context.Context, request *pb.UpdateUserRatingRequest) (*pb.RateResponse, error) {
-	ratedBy, err := Authorize(ctx, "REGULAR")
+	ratedBy, err := Authorize(ctx, []string{"REGULAR"})
 	err = h.service.UpdateUserRating(request.RatedUser, ratedBy, request.Rate)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (h RatingHandler) UpdateUserRating(ctx context.Context, request *pb.UpdateU
 }
 
 func (h RatingHandler) UpdateAccommodationRate(ctx context.Context, request *pb.RatingAccommodationRequest) (*pb.RateResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (h RatingHandler) UpdateAccommodationRate(ctx context.Context, request *pb.
 }
 
 func (h RatingHandler) DeleteAccommodationRate(ctx context.Context, request *pb.RateAccommodationIdRequest) (*pb.RateResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (h RatingHandler) DeleteAccommodationRate(ctx context.Context, request *pb.
 }
 
 func (h RatingHandler) DeleteUserRating(ctx context.Context, request *pb.DeleteUserRatingRequest) (*pb.RateResponse, error) {
-	deletedBy, err := Authorize(ctx, "REGULAR")
+	deletedBy, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (h RatingHandler) GetAverageUserRating(ctx context.Context, request *pb.Hos
 	return avgRate, nil
 }
 
-func Authorize(ctx context.Context, roleGuard string) (string, error) {
+func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
