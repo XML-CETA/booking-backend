@@ -11,6 +11,7 @@ type ReservationStore interface {
 	GetByIdAndUser(reservation primitive.ObjectID, user string) (Reservation, error)
 	GetWaitingByAccommodation(accommodation string) ([]Reservation, error)
 	GetById(reservation primitive.ObjectID) (Reservation, error)
+	GetByUserAndHost(user, host string) ([]Reservation, error)
 	ConfirmReservation(reservation primitive.ObjectID) error
 	Cancel(reservation primitive.ObjectID) error
 	CountCanceled(host string) (int32, error)
@@ -18,5 +19,5 @@ type ReservationStore interface {
 	CountNonCanceled(host string) (int32, error)
 	CountExpired(host string) (int32, error)
 	GetWaitingReservations(host string) ([]Reservation, error)
-  GetHostIntervalSum(host string) (int32, error)
+	GetHostIntervalSum(host string) (int32, error)
 }

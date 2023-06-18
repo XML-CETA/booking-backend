@@ -9,7 +9,6 @@ import (
 	"booking-backend/rating-service/startup/config"
 	"context"
 	"fmt"
-
 	"google.golang.org/grpc/metadata"
 )
 
@@ -39,6 +38,32 @@ func (h RatingHandler) CreateAccommodationRate(ctx context.Context, request *pb.
 
 	return &pb.RateResponse{
 		Data: fmt.Sprintf("Created"),
+	}, nil
+}
+
+func (h RatingHandler) CreateUserRating(ctx context.Context, request *pb.RateUserRequest) (*pb.RateResponse, error) {
+	user, err := Authorize(ctx, "REGULAR")
+	rating := domain.MakeRating(request)
+	rating.RatedBy = user
+	err = h.service.CreateUserRate(&rating)
+	if err != nil {
+		return &pb.RateResponse{
+			Data: fmt.Sprintf(err.Error()),
+		}, err
+	}
+	return &pb.RateResponse{
+		Data: fmt.Sprintf("Created rating."),
+	}, nil
+}
+
+func (h RatingHandler) UpdateUserRating(ctx context.Context, request *pb.UpdateUserRatingRequest) (*pb.RateResponse, error) {
+	ratedBy, err := Authorize(ctx, "REGULAR")
+	err = h.service.UpdateUserRating(request.RatedUser, ratedBy, request.Rate)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RateResponse{
+		Data: fmt.Sprintf("Rating changed"),
 	}, nil
 }
 
@@ -76,6 +101,21 @@ func (h RatingHandler) DeleteAccommodationRate(ctx context.Context, request *pb.
 	}, nil
 }
 
+func (h RatingHandler) DeleteUserRating(ctx context.Context, request *pb.DeleteUserRatingRequest) (*pb.RateResponse, error) {
+	deletedBy, err := Authorize(ctx, "REGULAR")
+	if err != nil {
+		return nil, err
+	}
+	err = h.service.DeleteUserRating(request.HostId, deletedBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.RateResponse{
+		Data: fmt.Sprintf("Rating deleted"),
+	}, nil
+}
+
 func (h RatingHandler) GetAllAccommodationRates(ctx context.Context, request *pb.RateAccommodationIdRequest) (*pb.AllAccommodationRatesResponse, error) {
 	rates, err := h.service.GetAllAccommodationRates(request.Id)
 	if err != nil {
@@ -85,8 +125,24 @@ func (h RatingHandler) GetAllAccommodationRates(ctx context.Context, request *pb
 	return rates, nil
 }
 
+func (h RatingHandler) GetHostRates(ctx context.Context, request *pb.HostRatesRequest) (*pb.HostRatesResponse, error) {
+	rates, err := h.service.GetHostRates(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	return rates, nil
+}
+
 func (h RatingHandler) GetAverageAccommodationRate(ctx context.Context, request *pb.RateAccommodationIdRequest) (*pb.AverageRateAccommodationResponse, error) {
 	avgRate, err := h.service.GetAverageAccommodationRate(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	return avgRate, nil
+}
+
+func (h RatingHandler) GetAverageUserRating(ctx context.Context, request *pb.HostRatesRequest) (*pb.AverageUserRatingResponse, error) {
+	avgRate, err := h.service.GetAverageUserRate(request.Id)
 	if err != nil {
 		return nil, err
 	}

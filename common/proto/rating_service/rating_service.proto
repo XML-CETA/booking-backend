@@ -36,8 +36,47 @@ service RatingService {
         get: "/ratings/accommodation/{id}/average"
       };
     }
+    rpc CreateUserRating(RateUserRequest) returns (RateResponse){
+      option (google.api.http)= {
+        post: "/ratings/user"
+        body: "*"
+      };
+    }
+    rpc GetHostRates(HostRatesRequest) returns (HostRatesResponse){
+      option (google.api.http) = {
+        get: "/ratings/host/{id}"
+      };
+    }
+    rpc UpdateUserRating(UpdateUserRatingRequest) returns (RateResponse){
+      option (google.api.http) = {
+        put: "/ratings/user"
+        body: "*"
+      };
+    }
+    rpc DeleteUserRating(DeleteUserRatingRequest) returns (RateResponse){
+      option (google.api.http) = {
+        delete:"/ratings/user/{hostId}"
+      };
+    }
+    rpc GetAverageUserRating(HostRatesRequest) returns (AverageUserRatingResponse) {
+      option (google.api.http) = {
+        get:"/ratings/user/{id}/average"
+      };
+    }
+
 }
 
+message RateUserRequest{
+  string ratedUser = 1;
+  int32 rate = 3;
+}
+
+message UserRating{
+  string ratedUser = 1;
+  string ratedBy = 2;
+  int32 rate = 3;
+  string date = 4;
+}
 
 message RatingAccommodationRequest {
     string accommodation = 1;
@@ -47,12 +86,33 @@ message RatingAccommodationRequest {
 message RateResponse {
     string data = 1;
 }
+
+message HostRatesRequest{
+  string id = 1;
+}
+
+message HostRatesResponse{
+  repeated UserRating ratings = 1;
+}
+
+message UpdateUserRatingRequest {
+  string ratedUser = 1;
+  int32 rate = 3;
+}
+
+message DeleteUserRatingRequest {
+  string hostId = 1;
+}
   
 message RateAccommodationIdRequest{
   string id = 1;
 }
 
 message AverageRateAccommodationResponse{
+  float average = 1;
+}
+
+message AverageUserRatingResponse{
   float average = 1;
 }
 

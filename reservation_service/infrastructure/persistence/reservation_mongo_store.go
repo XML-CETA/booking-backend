@@ -85,6 +85,24 @@ func (repo *ReservationMongoDBStore) GetWaitingReservations(host string) ([]doma
 	return reservations, err
 }
 
+func (repo *ReservationMongoDBStore) GetByUserAndHost(user, host string) ([]domain.Reservation, error) {
+	var reservations []domain.Reservation
+	filter := bson.D{
+		{Key: "user", Value: user},
+		{Key: "host", Value: host},
+		{Key: "status", Value: domain.Reserved},
+	}
+	result, err := repo.reservations.Find(context.Background(), filter)
+	for result.Next(context.TODO()) {
+		var reservation domain.Reservation
+		err := result.Decode(&reservation)
+		if err == nil {
+			reservations = append(reservations, reservation)
+		}
+	}
+	return reservations, err
+}
+
 func (repo *ReservationMongoDBStore) GetByIdAndUser(reservation primitive.ObjectID, user string) (domain.Reservation, error) {
 	filter := bson.D{
 		{Key: "_id", Value: reservation},
@@ -176,28 +194,28 @@ func (repo *ReservationMongoDBStore) countDocuments(filter primitive.D) (int32, 
 }
 
 func (repo *ReservationMongoDBStore) GetHostIntervalSum(host string) (int32, error) {
-  matchStage := bson.D {{
-    Key: "$match", Value: bson.D {{ Key: "host", Value: host }},
-  }}
+	matchStage := bson.D{{
+		Key: "$match", Value: bson.D{{Key: "host", Value: host}},
+	}}
 
-  groupStage := bson.D {{
-    Key: "$group", Value: bson.D {
-      { Key: "_id", Value: "$host" },
-      { Key: "sum", Value: bson.D{{Key: "$sum", Value: "$duration"}} },
-    },
-  }}
+	groupStage := bson.D{{
+		Key: "$group", Value: bson.D{
+			{Key: "_id", Value: "$host"},
+			{Key: "sum", Value: bson.D{{Key: "$sum", Value: "$duration"}}},
+		},
+	}}
 
-  cursor, err := repo.reservations.Aggregate(context.TODO(), mongo.Pipeline{matchStage, groupStage})
-  if err != nil {
-      panic(err)
-  }
+	cursor, err := repo.reservations.Aggregate(context.TODO(), mongo.Pipeline{matchStage, groupStage})
+	if err != nil {
+		panic(err)
+	}
 
-  var results []bson.M
-  if err = cursor.All(context.TODO(), &results); err != nil {
-      panic(err)
-  }
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
 
-  return results[0]["sum"].(int32), nil
+	return results[0]["sum"].(int32), nil
 }
 
 func makeStatusHostFilter(filterStatus primitive.D, host string) primitive.D {
@@ -217,4 +235,3 @@ func makeStatusUserFilter(filterStatus primitive.D, host string) primitive.D {
 		},
 	}}
 }
-

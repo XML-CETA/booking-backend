@@ -16,29 +16,27 @@ import (
 )
 
 type UserService struct {
-	store       domain.UserStore
-	ratingStore domain.RatingStore
-  subscriber  messaging.SubscriberModel
-  notificationPublisher messaging.PublisherModel
+	store                 domain.UserStore
+	subscriber            messaging.SubscriberModel
+	notificationPublisher messaging.PublisherModel
 }
 
-func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, notificationPublisher messaging.PublisherModel) (*UserService, error) {
-  service := &UserService{
-		store:       store,
-		ratingStore: ratingStore,
-    subscriber: subscriber,
-    notificationPublisher: notificationPublisher,
+func NewUserService(store domain.UserStore, subscriber messaging.SubscriberModel, notificationPublisher messaging.PublisherModel) (*UserService, error) {
+	service := &UserService{
+		store:                 store,
+		subscriber:            subscriber,
+		notificationPublisher: notificationPublisher,
 	}
 
-  err := service.subscriber.Subscribe(service.ProminentUser)
+	err := service.subscriber.Subscribe(service.ProminentUser)
 
-  log.Printf("%v", err)
+	log.Printf("%v", err)
 
-  if err != nil {
-    return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  return service, nil
+	return service, nil
 }
 
 func (service *UserService) Create(user domain.User) error {
@@ -48,15 +46,15 @@ func (service *UserService) Create(user domain.User) error {
 	}
 	err = service.store.Create(user)
 
-  if err == nil {
-    notifications := getNotificationClient()
-    _, err = notifications.NewUserSettings(context.Background(),&notification_service.NewUserSettingsRequest{
-      Host: user.Email,
-      Role: user.Role,
-    })
-  }
+	if err == nil {
+		notifications := getNotificationClient()
+		_, err = notifications.NewUserSettings(context.Background(), &notification_service.NewUserSettingsRequest{
+			Host: user.Email,
+			Role: user.Role,
+		})
+	}
 
-  return err
+	return err
 }
 
 func (service *UserService) Delete(username string) error {
@@ -69,10 +67,6 @@ func (service *UserService) Update(user domain.User) error {
 
 func (service *UserService) GetOne(email string) (domain.User, error) {
 	return service.store.GetOne(email)
-}
-
-func (service *UserService) RateUser(rating domain.Rating) error {
-	return service.ratingStore.Create(rating)
 }
 
 func (service *UserService) LoginCheck(email string, password string) (pb.User, error) {
@@ -105,42 +99,42 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 }
 
 func (service *UserService) ProminentUser(host string) {
-  reservation := getReservationClient()
+	reservation := getReservationClient()
 
-  user, err:= service.GetOne(host)
-  if err != nil {
-    return
-  }
+	user, err := service.GetOne(host)
+	if err != nil {
+		return
+	}
 
-  response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
+	response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
 
-  if err != nil {
-    return
-  }
+	if err != nil {
+		return
+	}
 
-  prominent := isProminent(response)
-  if (user.IsProminent != prominent) {
-    service.store.UpdateProminent(prominent, host)
+	prominent := isProminent(response)
+	if user.IsProminent != prominent {
+		service.store.UpdateProminent(prominent, host)
 
-    content := "You lost your prominent status"
-    if prominent {
-        content = "You gained the prominent status, congrats!"
-    }
+		content := "You lost your prominent status"
+		if prominent {
+			content = "You gained the prominent status, congrats!"
+		}
 
-    service.notificationPublisher.Publish(messaging.NotificationMessage{
-      User: host,
-      Subject: "Your prominent status has changed!",
-      Content: content,
-      Type: messaging.ReservationRequest,
-    })
-  }
+		service.notificationPublisher.Publish(messaging.NotificationMessage{
+			User:    host,
+			Subject: "Your prominent status has changed!",
+			Content: content,
+			Type:    messaging.ReservationRequest,
+		})
+	}
 
 }
 
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
-  return reservationAnalytics.CancelRate < 5.0 &&
-        reservationAnalytics.ExpiredCount >= 5 &&
-        reservationAnalytics.IntervalCount > 50
+	return reservationAnalytics.CancelRate < 5.0 &&
+		reservationAnalytics.ExpiredCount >= 5 &&
+		reservationAnalytics.IntervalCount > 50
 }
 
 func getReservationClient() reservation_service.ReservationServiceClient {
