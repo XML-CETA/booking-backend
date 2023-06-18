@@ -29,7 +29,7 @@ func (h AuthHandler) Login(ctx context.Context, request *pb.AuthenticateRequest)
 }
 
 func (h AuthHandler) Authorize(ctx context.Context, request *pb.AuthorizeRequest) (*pb.AuthorizeResponse, error) {
-	email ,err := h.service.Authorize(ctx, request.GetRoleGuard())
+	email ,err := h.service.Authorize(ctx, request.RoleGuard)
 	if err != nil {
 		return nil, err
 	}

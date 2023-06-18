@@ -25,7 +25,7 @@ func NewReservationHandler(service *application.ReservationService) *Reservation
 }
 
 func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationCreateRequest) (*pb.ReservationCreateResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (h ReservationHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 }
 
 func (h ReservationHandler) GetWaitingReservations(ctx context.Context, request *pb.WaitingReservationsForHostRequest) (*pb.WaitingReservationsForHostResponse, error) {
-	host, err := Authorize(ctx, "HOST")
+	host, err := Authorize(ctx, []string{"HOST"})
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (h ReservationHandler) GetWaitingReservations(ctx context.Context, request 
 }
 
 func (h ReservationHandler) ConfirmReservation(ctx context.Context, request *pb.ConfirmReservationRequest) (*pb.ConfirmReservationResponse, error) {
-	_, err := Authorize(ctx, "HOST")
+	_, err := Authorize(ctx, []string{"HOST"})
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (h ReservationHandler) ConfirmReservation(ctx context.Context, request *pb.
 }
 
 func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
-	user, err := Authorize(ctx, "REGULAR")
+	user, err := Authorize(ctx, []string{"REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (h ReservationHandler) GetHostAnalytics(ctx context.Context, request *pb.Ho
 	}, nil
 }
 
-func Authorize(ctx context.Context, roleGuard string) (string, error) {
+func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})

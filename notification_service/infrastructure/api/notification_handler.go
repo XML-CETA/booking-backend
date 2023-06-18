@@ -25,7 +25,7 @@ func NewNotificationHandler(service *application.NotificationService) *Notificat
 }
 
 func (h NotificationHandler) GetUserNotifications(ctx context.Context, request *notification_service.GetUserNotificationsRequest) (*notification_service.GetUserNotificationsResponse, error) {
-	user, err := Authorize(ctx, "HOST")
+  user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (h NotificationHandler) NewUserSettings(ctx context.Context, request *notif
 }
 
 func (h NotificationHandler) UpdateUserSettings(ctx context.Context, request *notification_service.UpdateUserSettingsRequest) (*notification_service.GetUserNotificationsResponse, error) {
-	user, err := Authorize(ctx, "HOST")
+	user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (h NotificationHandler) UpdateUserSettings(ctx context.Context, request *no
   return toGrpcUserSettings(response, notifications), nil
 }
 
-func Authorize(ctx context.Context, roleGuard string) (string, error) {
+func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})

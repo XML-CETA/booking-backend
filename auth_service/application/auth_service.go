@@ -57,7 +57,7 @@ func (service *AuthService) generateJwt(user *users_service.User) (string, error
 	return token, err
 }
 
-func (service *AuthService) Authorize(ctx context.Context, roleguard string) (string, error) {
+func (service *AuthService) Authorize(ctx context.Context, roleguard []string) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	header := md.Get("authorization")
 
@@ -72,7 +72,8 @@ func (service *AuthService) Authorize(ctx context.Context, roleguard string) (st
 		return "", errors.New("Invalid token")
 	}
 
-	if claims.CustomClaims["role"] != roleguard {
+
+	if !contains(roleguard, claims.CustomClaims["role"]) {
 		return "", errors.New("You are unauthorized for this endpoint")
 	}
 
@@ -90,3 +91,14 @@ func (service *AuthService) parseJwt(authorizationHeader string) (*jwt.Token, *c
 	return token, claims
 }
 
+
+
+func contains(s []string, str string) bool {
+  for _, v := range s {
+    if v == str {
+      return true
+    }
+  }
+
+  return false
+}
