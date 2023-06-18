@@ -28,7 +28,8 @@ func (store *RatingUserMongoDBStore) Create(rating *domain.RatingUser) (primitiv
 func (store *RatingUserMongoDBStore) GetHostRates(host string) ([]domain.RatingUser, error) {
 	var ratings []domain.RatingUser
 	filter := bson.D{
-		{Key: "host", Value: host},
+		{Key: "ratedUser", Value: host},
+		{Key: "status", Value: domain.Approved},
 	}
 	result, err := store.ratings.Find(context.Background(), filter)
 	for result.Next(context.TODO()) {
