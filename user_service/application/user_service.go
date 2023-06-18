@@ -16,29 +16,16 @@ import (
 )
 
 type UserService struct {
-<<<<<<< HEAD
-	store       domain.UserStore
-	ratingStore domain.RatingStore
-  subscriber  messaging.SubscriberModel
-  notificationPublisher messaging.PublisherModel
+	store                 domain.UserStore
+	subscriber            messaging.SubscriberModel
+	notificationPublisher messaging.PublisherModel
 }
 
-func NewUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, notificationPublisher messaging.PublisherModel) (*UserService, error) {
-  service := &UserService{
-		store:       store,
-		ratingStore: ratingStore,
-    subscriber: subscriber,
-    notificationPublisher: notificationPublisher,
-=======
-	store      domain.UserStore
-	subscriber messaging.SubscriberModel
-}
-
-func NewUserService(store domain.UserStore, subscriber messaging.SubscriberModel) (*UserService, error) {
+func NewUserService(store domain.UserStore, subscriber messaging.SubscriberModel, notificationPublisher messaging.PublisherModel) (*UserService, error) {
 	service := &UserService{
-		store:      store,
-		subscriber: subscriber,
->>>>>>> 3be3f21 (Implemented saga)
+		store:                 store,
+		subscriber:            subscriber,
+		notificationPublisher: notificationPublisher,
 	}
 
 	err := service.subscriber.Subscribe(service.ProminentUser)
@@ -59,15 +46,15 @@ func (service *UserService) Create(user domain.User) error {
 	}
 	err = service.store.Create(user)
 
-  if err == nil {
-    notifications := getNotificationClient()
-    _, err = notifications.NewUserSettings(context.Background(),&notification_service.NewUserSettingsRequest{
-      Host: user.Email,
-      Role: user.Role,
-    })
-  }
+	if err == nil {
+		notifications := getNotificationClient()
+		_, err = notifications.NewUserSettings(context.Background(), &notification_service.NewUserSettingsRequest{
+			Host: user.Email,
+			Role: user.Role,
+		})
+	}
 
-  return err
+	return err
 }
 
 func (service *UserService) Delete(username string) error {
@@ -114,42 +101,34 @@ func (service *UserService) UserToRPC(user domain.User) pb.User {
 func (service *UserService) ProminentUser(host string) {
 	reservation := getReservationClient()
 
-<<<<<<< HEAD
-  user, err:= service.GetOne(host)
-  if err != nil {
-    return
-  }
+	user, err := service.GetOne(host)
+	if err != nil {
+		return
+	}
 
-  response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
-=======
 	response, err := reservation.GetHostAnalytics(context.Background(), &reservation_service.HostAnalyticsRequest{Host: host})
->>>>>>> 3be3f21 (Implemented saga)
 
 	if err != nil {
 		return
 	}
 
-<<<<<<< HEAD
-  prominent := isProminent(response)
-  if (user.IsProminent != prominent) {
-    service.store.UpdateProminent(prominent, host)
+	prominent := isProminent(response)
+	if user.IsProminent != prominent {
+		service.store.UpdateProminent(prominent, host)
 
-    content := "You lost your prominent status"
-    if prominent {
-        content = "You gained the prominent status, congrats!"
-    }
+		content := "You lost your prominent status"
+		if prominent {
+			content = "You gained the prominent status, congrats!"
+		}
 
-    service.notificationPublisher.Publish(messaging.NotificationMessage{
-      User: host,
-      Subject: "Your prominent status has changed!",
-      Content: content,
-      Type: messaging.ReservationRequest,
-    })
-  }
+		service.notificationPublisher.Publish(messaging.NotificationMessage{
+			User:    host,
+			Subject: "Your prominent status has changed!",
+			Content: content,
+			Type:    messaging.ReservationRequest,
+		})
+	}
 
-=======
-	service.store.UpdateProminent(isProminent(response), host)
->>>>>>> 3be3f21 (Implemented saga)
 }
 
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {

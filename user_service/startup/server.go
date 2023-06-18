@@ -37,15 +37,9 @@ func (server *Server) Start() {
 	userStore := server.initUserStore(mongoClient)
 
 	subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
+	publisher := server.initPublisher(server.config.NotificationSubject)
 
-<<<<<<< HEAD
-  subscriber := server.initSubscriber(server.config.ProminentHostSubject, QueueGroup)
-  publisher := server.initPublisher(server.config.NotificationSubject)
-
-	userService := server.initUserService(userStore, ratingStore, subscriber, publisher)
-=======
-	userService := server.initUserService(userStore, subscriber)
->>>>>>> 3be3f21 (Implemented saga)
+	userService := server.initUserService(userStore, subscriber, publisher)
 
 	userHandler := server.initUserHandler(userService)
 
@@ -65,17 +59,11 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	return store
 }
 
-func (server *Server) initUserService(store domain.UserStore, subscriber messaging.SubscriberModel) *application.UserService {
-	service, err := application.NewUserService(store, subscriber)
-
-<<<<<<< HEAD
-func (server *Server) initUserService(store domain.UserStore, ratingStore domain.RatingStore, subscriber messaging.SubscriberModel, publisher messaging.PublisherModel) *application.UserService {
-  service, err := application.NewUserService(store, ratingStore, subscriber, publisher)
-=======
+func (server *Server) initUserService(store domain.UserStore, subscriber messaging.SubscriberModel, publisher messaging.PublisherModel) *application.UserService {
+	service, err := application.NewUserService(store, subscriber, publisher)
 	if err != nil {
 		log.Fatalf("Failed to start service %v", err)
 	}
->>>>>>> 3be3f21 (Implemented saga)
 
 	return service
 }
