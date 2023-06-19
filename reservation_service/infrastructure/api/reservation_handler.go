@@ -9,7 +9,6 @@ import (
 	"booking-backend/reservation-service/startup/config"
 	"context"
 	"fmt"
-
 	"google.golang.org/grpc/metadata"
 )
 
@@ -39,6 +38,16 @@ func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationC
 
 	return &pb.ReservationCreateResponse{
 		Data: fmt.Sprintf("Created"),
+	}, nil
+}
+
+func (h ReservationHandler) IsAppointmentReserved(ctx context.Context, request *pb.IsAppointmentReservedRequest) (*pb.IsAppointmentReservedResponse, error) {
+	reserved, err := h.service.IsAppointmentReserved(request.Accommodation, request.DateFrom, request.DateTo)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.IsAppointmentReservedResponse{
+		Reserved: reserved,
 	}, nil
 }
 
@@ -97,39 +106,55 @@ func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReserv
 	}, nil
 }
 
+func (h ReservationHandler) Decline(ctx context.Context, request *pb.DeleteReservationRequest) (*pb.DeleteReservationResponse, error) {
+	_, err := Authorize(ctx, []string{"HOST"})
+	if err != nil {
+		return nil, err
+	}
+
+	err = h.service.Decline(request.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteReservationResponse{
+		Message: "Successfully declined",
+	}, nil
+}
+
 func (h ReservationHandler) GetHostAnalytics(ctx context.Context, request *pb.HostAnalyticsRequest) (*pb.HostAnalyticsResponse, error) {
-  cancelRate, err := h.service.GetCancelRate(request.Host)
+	cancelRate, err := h.service.GetCancelRate(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
-  expiredCount, err := h.service.GetExpiredCount(request.Host)
+	expiredCount, err := h.service.GetExpiredCount(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
-  intervalCount, err := h.service.GetIntervalCount(request.Host)
+	intervalCount, err := h.service.GetIntervalCount(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.HostAnalyticsResponse{
-    CancelRate: cancelRate,
-    ExpiredCount: expiredCount,
-    IntervalCount: intervalCount,
+		CancelRate:    cancelRate,
+		ExpiredCount:  expiredCount,
+		IntervalCount: intervalCount,
 	}, nil
 }
 
 func (h ReservationHandler) HasLeftoverReservations(ctx context.Context, request *pb.LeftoverReservationsRequest) (*pb.LeftoverReservationsResponse, error) {
-  hasActiveReservations ,err := h.service.HasActiveReservations(request.User, request.Role)
+	hasActiveReservations, err := h.service.HasActiveReservations(request.User, request.Role)
 
 	if err != nil {
 		return nil, err
 	}
 
-  return &pb.LeftoverReservationsResponse{
-    CanDelete: !hasActiveReservations,
-  }, nil
+	return &pb.LeftoverReservationsResponse{
+		CanDelete: !hasActiveReservations,
+	}, nil
 }
 
 func Authorize(ctx context.Context, roleGuard []string) (string, error) {
@@ -137,10 +162,9 @@ func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
-  if err != nil {
-    return "", err
-  }
+	if err != nil {
+		return "", err
+	}
 
 	return user.UserEmail, nil
 }
-

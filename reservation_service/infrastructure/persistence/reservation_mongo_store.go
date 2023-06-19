@@ -154,6 +154,17 @@ func (repo *ReservationMongoDBStore) Cancel(reservation primitive.ObjectID) erro
 	return err
 }
 
+func (repo *ReservationMongoDBStore) Decline(reservation primitive.ObjectID) error {
+	filter := bson.D{{Key: "_id", Value: reservation}}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "status", Value: domain.Declined},
+		}},
+	}
+	_, err := repo.reservations.UpdateOne(context.Background(), filter, update)
+	return err
+}
+
 func (repo *ReservationMongoDBStore) CountCanceled(host string) (int32, error) {
 	filterStatus := bson.D{{Key: "status", Value: domain.Canceled}}
 	filter := makeStatusHostFilter(filterStatus, host)
@@ -174,15 +185,14 @@ func (repo *ReservationMongoDBStore) CountExpired(host string) (int32, error) {
 	return repo.countDocuments(filter)
 }
 
-
 func (repo *ReservationMongoDBStore) CountActive(user string, role string) (int32, error) {
 	filterStatus := bson.D{{Key: "status", Value: domain.Reserved}}
 	var filter primitive.D
-  if role == "HOST" {
-    filter = makeStatusHostFilter(filterStatus, user)
-  } else {
-    filter = makeStatusUserFilter(filterStatus, user)
-  }
+	if role == "HOST" {
+		filter = makeStatusHostFilter(filterStatus, user)
+	} else {
+		filter = makeStatusUserFilter(filterStatus, user)
+	}
 
 	return repo.countDocuments(filter)
 }

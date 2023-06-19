@@ -71,6 +71,14 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 	return err
 }
 
+func (service *ReservationService) IsAppointmentReserved(accommodation, dateFrom, dateTo string) (bool, error) {
+	_, err := service.store.GetFirstActive(accommodation, dateFrom, dateTo)
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
 	return service.store.GetAll()
 }
@@ -144,6 +152,15 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 	}
 
 	return err
+}
+
+func (service *ReservationService) Decline(reservationId string) error {
+	id, err := primitive.ObjectIDFromHex(reservationId)
+	if err != nil {
+		return err
+	}
+
+	return service.store.Decline(id)
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -222,12 +239,12 @@ func (service *ReservationService) GetIntervalCount(host string) (int32, error) 
 }
 
 func (service *ReservationService) HasActiveReservations(user string, role string) (bool, error) {
-  count, err := service.store.CountActive(user, role)
-  if err != nil {
-    return false, err
-  }
+	count, err := service.store.CountActive(user, role)
+	if err != nil {
+		return false, err
+	}
 
-  return count > 0, nil
+	return count > 0, nil
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {

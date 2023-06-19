@@ -21,4 +21,5 @@ type ReservationStore interface {
 	CountActive(user string, role string) (int32, error)
 	GetWaitingReservations(host string) ([]Reservation, error)
 	GetHostIntervalSum(host string) (int32, error)
+	Decline(reservation primitive.ObjectID) error
 }

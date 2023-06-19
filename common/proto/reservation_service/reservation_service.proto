@@ -31,6 +31,12 @@ service ReservationService {
 		  delete: "/reservations/{id}"
 		};
 	}
+	rpc Decline(DeleteReservationRequest) returns (DeleteReservationResponse){
+			option (google.api.http) = {
+				delete: "/reservations/waiting/{id}"
+			};
+	}
+	rpc IsAppointmentReserved(IsAppointmentReservedRequest) returns (IsAppointmentReservedResponse){}
   rpc GetHostAnalytics(HostAnalyticsRequest) returns (HostAnalyticsResponse) {
 	}
   rpc HasLeftoverReservations(LeftoverReservationsRequest) returns (LeftoverReservationsResponse) {
@@ -54,6 +60,16 @@ message WaitingReservationsForHostRequest{
 
 message WaitingReservationsForHostResponse{
 	repeated WaitingReservation reservations = 1;
+}
+
+message IsAppointmentReservedRequest{
+	string accommodation = 1;
+	string dateFrom = 2;
+	string dateTo = 3;
+}
+
+message IsAppointmentReservedResponse{
+	bool reserved = 1;
 }
 
 message Reservation {
