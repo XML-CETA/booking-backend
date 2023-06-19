@@ -57,19 +57,19 @@ func (service *AccommodationService) DeleteAllByHost(host string) error {
 	return service.store.DeleteAllByHost(host)
 }
 
-func (service *AccommodationService) SearchAccommodations(request *pb.SearchAccommodationsRequest) ([]*pb.SingleAccommodation, error) {
+func (service *AccommodationService) SearchAccommodations(request *pb.SearchAccommodationsRequest) ([]*pb.SearchedAccommodation, error) {
 	accommodations, err := service.store.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
-	filteredAccommodations := make([]*pb.SingleAccommodation, 0)
+	filteredAccommodations := make([]*pb.SearchedAccommodation, 0)
 	for _, accommodation := range accommodations {
 		if accommodation.MinGuests <= request.GuestsNumber && accommodation.MaxGuests >= request.GuestsNumber && accommodation.Address.Country == request.Country && accommodation.Address.City == request.City {
 			for _, appointment := range accommodation.Appointments {
 				interval, _ := domain.StringToDateInterval(request.Interval)
 				if isExactOverlap(appointment.Interval, interval) {
-					filteredAccommodations = append(filteredAccommodations, ConvertToGrpc(&accommodation))
+					filteredAccommodations = append(filteredAccommodations, ConvertToSearchedGrpc(&accommodation, request.GuestsNumber, &appointment))
 					break
 				}
 			}
@@ -224,6 +224,25 @@ func ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation 
 	return &res
 }
 
+func ConvertToSearchedGrpc(accommodation *domain.Accommodation, guestNumber int32, appointment *domain.Appointment) *pb.SearchedAccommodation {
+	res := pb.SearchedAccommodation{
+		Id:           accommodation.Id.Hex(),
+		Name:         accommodation.Name,
+		GuestsNumber: guestNumber,
+		Address: &pb.AccommodationAddress{
+			City:    accommodation.Address.City,
+			Number:  accommodation.Address.Number,
+			Country: accommodation.Address.Country,
+			Street:  accommodation.Address.Street,
+		},
+		TotalPrice: float64(int32(appointment.Price) * GetIntervalDuration(appointment.Interval)),
+		UnitPrice:  appointment.Price,
+		Host:       accommodation.Host,
+	}
+
+	return &res
+}
+
 func ConvertToGrpcAppointment(appointment domain.Appointment) *pb.AppointmentResponse {
 	interval := ConvertToGrpcInterval(appointment.Interval)
 
@@ -239,4 +258,10 @@ func ConvertToGrpcInterval(interval domain.DateInterval) *pb.SingleDateInterval 
 		DateFrom: interval.DateFrom.Format(time.DateOnly),
 		DateTo:   interval.DateTo.Format(time.DateOnly),
 	}
+}
+
+func GetIntervalDuration(interval domain.DateInterval) int32 {
+	duration := interval.DateTo.Sub(interval.DateFrom)
+	days := int32(duration.Hours() / 24)
+	return days
 }

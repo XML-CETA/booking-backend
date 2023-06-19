@@ -129,8 +129,18 @@ message SearchAccommodationsRequest{
   SingleDateInterval interval = 4;
 }
 
+message SearchedAccommodation{
+  string id = 1;
+  int32 guestsNumber = 2;
+  string name = 4;
+  AccommodationAddress address = 5;
+  string host = 6;
+  double totalPrice = 7;
+  double unitPrice = 8;
+}
+
 message SearchAccommodationsResponse{
-  repeated SingleAccommodation accommodations = 1;
+  repeated SearchedAccommodation accommodations = 1;
 }
 
 message AccommodationIdRequest{
