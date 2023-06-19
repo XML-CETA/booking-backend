@@ -34,14 +34,8 @@ func (store *UserMongoDBStore) Create(user domain.User) error {
 func (store *UserMongoDBStore) Delete(email string) error {
 	filter := bson.D{{Key: "email", Value: email}}
 
-	var result *domain.User
-	err := store.users.FindOne(context.TODO(), filter).Decode(&result)
-	if err == nil {
-		_, err2 := store.users.DeleteOne(context.TODO(), result)
-		return err2
-	}
-
-	return err
+		_, err := store.users.DeleteOne(context.TODO(), filter)
+		return err
 }
 
 func (store *UserMongoDBStore) Update(user domain.User) error {

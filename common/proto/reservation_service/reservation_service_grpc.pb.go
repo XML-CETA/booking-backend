@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ReservationService_Create_FullMethodName                 = "/ReservationService/Create"
-	ReservationService_GetAll_FullMethodName                 = "/ReservationService/GetAll"
-	ReservationService_GetWaitingReservations_FullMethodName = "/ReservationService/GetWaitingReservations"
-	ReservationService_ConfirmReservation_FullMethodName     = "/ReservationService/ConfirmReservation"
-	ReservationService_Delete_FullMethodName                 = "/ReservationService/Delete"
-	ReservationService_GetHostAnalytics_FullMethodName       = "/ReservationService/GetHostAnalytics"
+	ReservationService_Create_FullMethodName                  = "/ReservationService/Create"
+	ReservationService_GetAll_FullMethodName                  = "/ReservationService/GetAll"
+	ReservationService_GetWaitingReservations_FullMethodName  = "/ReservationService/GetWaitingReservations"
+	ReservationService_ConfirmReservation_FullMethodName      = "/ReservationService/ConfirmReservation"
+	ReservationService_Delete_FullMethodName                  = "/ReservationService/Delete"
+	ReservationService_GetHostAnalytics_FullMethodName        = "/ReservationService/GetHostAnalytics"
+	ReservationService_HasLeftoverReservations_FullMethodName = "/ReservationService/HasLeftoverReservations"
 )
 
 // ReservationServiceClient is the client API for ReservationService service.
@@ -37,6 +38,7 @@ type ReservationServiceClient interface {
 	ConfirmReservation(ctx context.Context, in *ConfirmReservationRequest, opts ...grpc.CallOption) (*ConfirmReservationResponse, error)
 	Delete(ctx context.Context, in *DeleteReservationRequest, opts ...grpc.CallOption) (*DeleteReservationResponse, error)
 	GetHostAnalytics(ctx context.Context, in *HostAnalyticsRequest, opts ...grpc.CallOption) (*HostAnalyticsResponse, error)
+	HasLeftoverReservations(ctx context.Context, in *LeftoverReservationsRequest, opts ...grpc.CallOption) (*LeftoverReservationsResponse, error)
 }
 
 type reservationServiceClient struct {
@@ -101,6 +103,15 @@ func (c *reservationServiceClient) GetHostAnalytics(ctx context.Context, in *Hos
 	return out, nil
 }
 
+func (c *reservationServiceClient) HasLeftoverReservations(ctx context.Context, in *LeftoverReservationsRequest, opts ...grpc.CallOption) (*LeftoverReservationsResponse, error) {
+	out := new(LeftoverReservationsResponse)
+	err := c.cc.Invoke(ctx, ReservationService_HasLeftoverReservations_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReservationServiceServer is the server API for ReservationService service.
 // All implementations must embed UnimplementedReservationServiceServer
 // for forward compatibility
@@ -111,6 +122,7 @@ type ReservationServiceServer interface {
 	ConfirmReservation(context.Context, *ConfirmReservationRequest) (*ConfirmReservationResponse, error)
 	Delete(context.Context, *DeleteReservationRequest) (*DeleteReservationResponse, error)
 	GetHostAnalytics(context.Context, *HostAnalyticsRequest) (*HostAnalyticsResponse, error)
+	HasLeftoverReservations(context.Context, *LeftoverReservationsRequest) (*LeftoverReservationsResponse, error)
 	mustEmbedUnimplementedReservationServiceServer()
 }
 
@@ -135,6 +147,9 @@ func (UnimplementedReservationServiceServer) Delete(context.Context, *DeleteRese
 }
 func (UnimplementedReservationServiceServer) GetHostAnalytics(context.Context, *HostAnalyticsRequest) (*HostAnalyticsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHostAnalytics not implemented")
+}
+func (UnimplementedReservationServiceServer) HasLeftoverReservations(context.Context, *LeftoverReservationsRequest) (*LeftoverReservationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HasLeftoverReservations not implemented")
 }
 func (UnimplementedReservationServiceServer) mustEmbedUnimplementedReservationServiceServer() {}
 
@@ -257,6 +272,24 @@ func _ReservationService_GetHostAnalytics_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReservationService_HasLeftoverReservations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LeftoverReservationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReservationServiceServer).HasLeftoverReservations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReservationService_HasLeftoverReservations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReservationServiceServer).HasLeftoverReservations(ctx, req.(*LeftoverReservationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReservationService_ServiceDesc is the grpc.ServiceDesc for ReservationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -287,6 +320,10 @@ var ReservationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetHostAnalytics",
 			Handler:    _ReservationService_GetHostAnalytics_Handler,
+		},
+		{
+			MethodName: "HasLeftoverReservations",
+			Handler:    _ReservationService_HasLeftoverReservations_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

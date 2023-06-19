@@ -52,6 +52,7 @@ service AccommodationService{
     }
     rpc ValidateReservation(ValidateReservationRequest) returns (ValidateReservationResponse) {}
     rpc IsAutomaticConfirmation(AccommodationIdRequest) returns (IsAutomaticConfirmationResponse){}
+    rpc DeleteHostAccommodations(DeleteHostAccommodationsRequest) returns (DeleteHostAccommodationsResponse){}
 }
 
 message SingleDateInterval{
@@ -150,3 +151,10 @@ message ValidateReservationResponse {
 	bool success = 1;
   string host = 2;
 }
+
+message DeleteHostAccommodationsRequest {
+  string host = 1;
+  }
+
+message DeleteHostAccommodationsResponse {
+  }

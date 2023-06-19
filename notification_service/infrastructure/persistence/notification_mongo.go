@@ -43,3 +43,9 @@ func (store *NotificationDB) GetAllByUser(user string) ([]domain.Notification, e
 
 	return notifications, err
 }
+
+func (store *NotificationDB) RedactUser(user string) error {
+	filter := bson.D{{Key: "user", Value: user}}
+	_, err := store.notifications.DeleteMany(context.Background(), filter)
+	return err
+}

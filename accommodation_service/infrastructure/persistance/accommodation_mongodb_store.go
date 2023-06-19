@@ -77,6 +77,13 @@ func (store *AccommodationMongoDBStore) Delete(id primitive.ObjectID) error {
 	return err
 }
 
+
+func (repo *AccommodationMongoDBStore) DeleteAllByHost(host string) error {
+	filter := bson.D{{Key: "host", Value: host}}
+	_, err := repo.accommodations.DeleteMany(context.Background(), filter)
+	return err
+}
+
 func (store *AccommodationMongoDBStore) filter(filter interface{}) ([]*domain.Accommodation, error) {
 	cursor, err := store.accommodations.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())

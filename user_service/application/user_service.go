@@ -8,6 +8,7 @@ import (
 
 	"booking-backend/common/clients"
 	"booking-backend/common/messaging"
+	"booking-backend/common/proto/accommodation_service"
 	"booking-backend/common/proto/notification_service"
 	"booking-backend/common/proto/reservation_service"
 	pb "booking-backend/common/proto/user_service"
@@ -131,6 +132,38 @@ func (service *UserService) ProminentUser(host string) {
 
 }
 
+func (service *UserService) CanDelete(user string, role string) (bool, error) {
+  reservations := getReservationClient()
+
+  response, err := reservations.HasLeftoverReservations(context.Background(), &reservation_service.LeftoverReservationsRequest{
+    Role: role,
+    User: user,
+  })
+
+  if err != nil {
+    return false, err
+  }
+
+  return response.CanDelete, nil
+
+}
+
+func (service *UserService) DeleteHostAccommodations(user string) error {
+  accommodations := getAccommodationService()
+
+  _, err := accommodations.DeleteHostAccommodations(context.Background(), &accommodation_service.DeleteHostAccommodationsRequest{Host: user})
+
+  return err
+}
+
+func (service *UserService) DeleteUserNotifications(user string) error {
+  notifications := getNotificationClient()
+
+  _, err := notifications.RedactUser(context.Background(), &notification_service.RedactUserRequest{User: user})
+
+  return err
+}
+
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
 	return reservationAnalytics.CancelRate < 5.0 &&
 		reservationAnalytics.ExpiredCount >= 5 &&
@@ -139,6 +172,10 @@ func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse
 
 func getReservationClient() reservation_service.ReservationServiceClient {
 	return clients.NewReservationClient(fmt.Sprintf("%s:%s", config.NewConfig().ReservationHost, config.NewConfig().ReservationPort))
+}
+
+func getAccommodationService() accommodation_service.AccommodationServiceClient {
+	return clients.NewAccommodationClient(fmt.Sprintf("%s:%s", config.NewConfig().AccommodationHost, config.NewConfig().AccommodationPort))
 }
 
 func getNotificationClient() notification_service.NotificationServiceClient {

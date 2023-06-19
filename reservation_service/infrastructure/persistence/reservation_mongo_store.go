@@ -174,6 +174,19 @@ func (repo *ReservationMongoDBStore) CountExpired(host string) (int32, error) {
 	return repo.countDocuments(filter)
 }
 
+
+func (repo *ReservationMongoDBStore) CountActive(user string, role string) (int32, error) {
+	filterStatus := bson.D{{Key: "status", Value: domain.Reserved}}
+	var filter primitive.D
+  if role == "HOST" {
+    filter = makeStatusHostFilter(filterStatus, user)
+  } else {
+    filter = makeStatusUserFilter(filterStatus, user)
+  }
+
+	return repo.countDocuments(filter)
+}
+
 func (repo *ReservationMongoDBStore) CountNonCanceled(host string) (int32, error) {
 	filterStatus := bson.D{{
 		Key: "status", Value: bson.D{{Key: "$ne", Value: domain.Canceled}},

@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UsersService_CreateUser_FullMethodName = "/UsersService/CreateUser"
-	UsersService_UpdateUser_FullMethodName = "/UsersService/UpdateUser"
-	UsersService_DeleteUser_FullMethodName = "/UsersService/DeleteUser"
-	UsersService_LoginCheck_FullMethodName = "/UsersService/LoginCheck"
+	UsersService_CreateUser_FullMethodName  = "/UsersService/CreateUser"
+	UsersService_UpdateUser_FullMethodName  = "/UsersService/UpdateUser"
+	UsersService_DeleteUser_FullMethodName  = "/UsersService/DeleteUser"
+	UsersService_GetUserData_FullMethodName = "/UsersService/GetUserData"
+	UsersService_LoginCheck_FullMethodName  = "/UsersService/LoginCheck"
 )
 
 // UsersServiceClient is the client API for UsersService service.
@@ -32,6 +33,7 @@ type UsersServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	GetUserData(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*UserFull, error)
 	LoginCheck(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 }
 
@@ -70,6 +72,15 @@ func (c *usersServiceClient) DeleteUser(ctx context.Context, in *DeleteRequest, 
 	return out, nil
 }
 
+func (c *usersServiceClient) GetUserData(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*UserFull, error) {
+	out := new(UserFull)
+	err := c.cc.Invoke(ctx, UsersService_GetUserData_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *usersServiceClient) LoginCheck(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, UsersService_LoginCheck_FullMethodName, in, out, opts...)
@@ -86,6 +97,7 @@ type UsersServiceServer interface {
 	CreateUser(context.Context, *CreateRequest) (*CreateResponse, error)
 	UpdateUser(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	DeleteUser(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	GetUserData(context.Context, *GetRequest) (*UserFull, error)
 	LoginCheck(context.Context, *LoginRequest) (*LoginResponse, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
@@ -102,6 +114,9 @@ func (UnimplementedUsersServiceServer) UpdateUser(context.Context, *UpdateReques
 }
 func (UnimplementedUsersServiceServer) DeleteUser(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedUsersServiceServer) GetUserData(context.Context, *GetRequest) (*UserFull, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
 }
 func (UnimplementedUsersServiceServer) LoginCheck(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginCheck not implemented")
@@ -173,6 +188,24 @@ func _UsersService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_GetUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetUserData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetUserData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetUserData(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UsersService_LoginCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginRequest)
 	if err := dec(in); err != nil {
@@ -209,6 +242,10 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _UsersService_DeleteUser_Handler,
+		},
+		{
+			MethodName: "GetUserData",
+			Handler:    _UsersService_GetUserData_Handler,
 		},
 		{
 			MethodName: "LoginCheck",

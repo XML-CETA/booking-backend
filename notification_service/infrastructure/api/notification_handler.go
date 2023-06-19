@@ -53,6 +53,16 @@ func (h NotificationHandler) NewUserSettings(ctx context.Context, request *notif
   }, nil
 }
 
+func (h NotificationHandler) RedactUser(ctx context.Context, request *notification_service.RedactUserRequest) (*notification_service.RedactUserResponse, error) {
+  err := h.service.RedactUser(request.User)
+  if err != nil {
+    return nil, err
+  }
+
+  return &notification_service.RedactUserResponse{
+  }, nil
+}
+
 func (h NotificationHandler) UpdateUserSettings(ctx context.Context, request *notification_service.UpdateUserSettingsRequest) (*notification_service.GetUserNotificationsResponse, error) {
 	user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
 	if err != nil {

@@ -18,6 +18,7 @@ type ReservationStore interface {
 	CountUserCanceled(user string) (int32, error)
 	CountNonCanceled(host string) (int32, error)
 	CountExpired(host string) (int32, error)
+	CountActive(user string, role string) (int32, error)
 	GetWaitingReservations(host string) ([]Reservation, error)
 	GetHostIntervalSum(host string) (int32, error)
 }

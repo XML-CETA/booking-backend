@@ -53,6 +53,10 @@ func (service *AccommodationService) Delete(id string) error {
 	return service.store.Delete(objId)
 }
 
+func (service *AccommodationService) DeleteAllByHost(host string) error {
+	return service.store.DeleteAllByHost(host)
+}
+
 func (service *AccommodationService) SearchAccommodations(request *pb.SearchAccommodationsRequest) ([]*pb.SingleAccommodation, error) {
 	accommodations, err := service.store.GetAll()
 	if err != nil {

@@ -19,16 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	AccommodationService_Create_FullMethodName                  = "/AccommodationService/Create"
-	AccommodationService_Update_FullMethodName                  = "/AccommodationService/Update"
-	AccommodationService_Delete_FullMethodName                  = "/AccommodationService/Delete"
-	AccommodationService_GetAll_FullMethodName                  = "/AccommodationService/GetAll"
-	AccommodationService_SearchAccommodations_FullMethodName    = "/AccommodationService/SearchAccommodations"
-	AccommodationService_GetById_FullMethodName                 = "/AccommodationService/GetById"
-	AccommodationService_CreateAppointment_FullMethodName       = "/AccommodationService/CreateAppointment"
-	AccommodationService_UpdateAppointment_FullMethodName       = "/AccommodationService/UpdateAppointment"
-	AccommodationService_ValidateReservation_FullMethodName     = "/AccommodationService/ValidateReservation"
-	AccommodationService_IsAutomaticConfirmation_FullMethodName = "/AccommodationService/IsAutomaticConfirmation"
+	AccommodationService_Create_FullMethodName                   = "/AccommodationService/Create"
+	AccommodationService_Update_FullMethodName                   = "/AccommodationService/Update"
+	AccommodationService_Delete_FullMethodName                   = "/AccommodationService/Delete"
+	AccommodationService_GetAll_FullMethodName                   = "/AccommodationService/GetAll"
+	AccommodationService_SearchAccommodations_FullMethodName     = "/AccommodationService/SearchAccommodations"
+	AccommodationService_GetById_FullMethodName                  = "/AccommodationService/GetById"
+	AccommodationService_CreateAppointment_FullMethodName        = "/AccommodationService/CreateAppointment"
+	AccommodationService_UpdateAppointment_FullMethodName        = "/AccommodationService/UpdateAppointment"
+	AccommodationService_ValidateReservation_FullMethodName      = "/AccommodationService/ValidateReservation"
+	AccommodationService_IsAutomaticConfirmation_FullMethodName  = "/AccommodationService/IsAutomaticConfirmation"
+	AccommodationService_DeleteHostAccommodations_FullMethodName = "/AccommodationService/DeleteHostAccommodations"
 )
 
 // AccommodationServiceClient is the client API for AccommodationService service.
@@ -45,6 +46,7 @@ type AccommodationServiceClient interface {
 	UpdateAppointment(ctx context.Context, in *UpdateAppointmentRequest, opts ...grpc.CallOption) (*Response, error)
 	ValidateReservation(ctx context.Context, in *ValidateReservationRequest, opts ...grpc.CallOption) (*ValidateReservationResponse, error)
 	IsAutomaticConfirmation(ctx context.Context, in *AccommodationIdRequest, opts ...grpc.CallOption) (*IsAutomaticConfirmationResponse, error)
+	DeleteHostAccommodations(ctx context.Context, in *DeleteHostAccommodationsRequest, opts ...grpc.CallOption) (*DeleteHostAccommodationsResponse, error)
 }
 
 type accommodationServiceClient struct {
@@ -145,6 +147,15 @@ func (c *accommodationServiceClient) IsAutomaticConfirmation(ctx context.Context
 	return out, nil
 }
 
+func (c *accommodationServiceClient) DeleteHostAccommodations(ctx context.Context, in *DeleteHostAccommodationsRequest, opts ...grpc.CallOption) (*DeleteHostAccommodationsResponse, error) {
+	out := new(DeleteHostAccommodationsResponse)
+	err := c.cc.Invoke(ctx, AccommodationService_DeleteHostAccommodations_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccommodationServiceServer is the server API for AccommodationService service.
 // All implementations must embed UnimplementedAccommodationServiceServer
 // for forward compatibility
@@ -159,6 +170,7 @@ type AccommodationServiceServer interface {
 	UpdateAppointment(context.Context, *UpdateAppointmentRequest) (*Response, error)
 	ValidateReservation(context.Context, *ValidateReservationRequest) (*ValidateReservationResponse, error)
 	IsAutomaticConfirmation(context.Context, *AccommodationIdRequest) (*IsAutomaticConfirmationResponse, error)
+	DeleteHostAccommodations(context.Context, *DeleteHostAccommodationsRequest) (*DeleteHostAccommodationsResponse, error)
 	mustEmbedUnimplementedAccommodationServiceServer()
 }
 
@@ -195,6 +207,9 @@ func (UnimplementedAccommodationServiceServer) ValidateReservation(context.Conte
 }
 func (UnimplementedAccommodationServiceServer) IsAutomaticConfirmation(context.Context, *AccommodationIdRequest) (*IsAutomaticConfirmationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsAutomaticConfirmation not implemented")
+}
+func (UnimplementedAccommodationServiceServer) DeleteHostAccommodations(context.Context, *DeleteHostAccommodationsRequest) (*DeleteHostAccommodationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteHostAccommodations not implemented")
 }
 func (UnimplementedAccommodationServiceServer) mustEmbedUnimplementedAccommodationServiceServer() {}
 
@@ -389,6 +404,24 @@ func _AccommodationService_IsAutomaticConfirmation_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccommodationService_DeleteHostAccommodations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteHostAccommodationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccommodationServiceServer).DeleteHostAccommodations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccommodationService_DeleteHostAccommodations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccommodationServiceServer).DeleteHostAccommodations(ctx, req.(*DeleteHostAccommodationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccommodationService_ServiceDesc is the grpc.ServiceDesc for AccommodationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -435,6 +468,10 @@ var AccommodationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IsAutomaticConfirmation",
 			Handler:    _AccommodationService_IsAutomaticConfirmation_Handler,
+		},
+		{
+			MethodName: "DeleteHostAccommodations",
+			Handler:    _AccommodationService_DeleteHostAccommodations_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -55,3 +55,9 @@ func (store *NotificationSettingsDB) Update(user string, body *notification_serv
 	_, err := store.notificationSettings.UpdateOne(context.Background(), filter, update)
 	return err
 }
+
+func (store *NotificationSettingsDB) RedactUser(user string) error {
+	filter := bson.D{{Key: "user", Value: user}}
+	_, err := store.notificationSettings.DeleteMany(context.Background(), filter)
+	return err
+}
