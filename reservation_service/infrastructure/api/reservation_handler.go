@@ -30,6 +30,9 @@ func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationC
 		return nil, err
 	}
 
+	fmt.Println(user)
+	fmt.Println("USO U SERVIS")
+
 	newReservation := domain.MakeReservation(request.Guests, request.Accommodation, user, request.DateFrom, request.DateTo)
 
 	err = h.service.CreateReservation(newReservation)
@@ -98,26 +101,40 @@ func (h ReservationHandler) Delete(ctx context.Context, request *pb.DeleteReserv
 }
 
 func (h ReservationHandler) GetHostAnalytics(ctx context.Context, request *pb.HostAnalyticsRequest) (*pb.HostAnalyticsResponse, error) {
-  cancelRate, err := h.service.GetCancelRate(request.Host)
+	cancelRate, err := h.service.GetCancelRate(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
-  expiredCount, err := h.service.GetExpiredCount(request.Host)
+	expiredCount, err := h.service.GetExpiredCount(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
-  intervalCount, err := h.service.GetIntervalCount(request.Host)
+	intervalCount, err := h.service.GetIntervalCount(request.Host)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.HostAnalyticsResponse{
-    CancelRate: cancelRate,
-    ExpiredCount: expiredCount,
-    IntervalCount: intervalCount,
+		CancelRate:    cancelRate,
+		ExpiredCount:  expiredCount,
+		IntervalCount: intervalCount,
 	}, nil
+}
+
+func (h ReservationHandler) GetFlightsForReservation(ctx context.Context, request *pb.FlightForReservationRequest) (*pb.FlightForReservationResponse, error) {
+	user, err := Authorize(ctx, "REGULAR")
+	if err != nil {
+		return nil, err
+	}
+
+	flights, err := h.service.GetReservationFlights(request.Reservation, request.City, user, request.IsArrival)
+	if err != nil {
+		return nil, err
+	}
+
+	return flights, nil
 }
 
 func Authorize(ctx context.Context, roleGuard string) (string, error) {
@@ -125,10 +142,9 @@ func Authorize(ctx context.Context, roleGuard string) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
-  if err != nil {
-    return "", err
-  }
+	if err != nil {
+		return "", err
+	}
 
 	return user.UserEmail, nil
 }
-

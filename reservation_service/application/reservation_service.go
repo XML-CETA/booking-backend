@@ -7,9 +7,14 @@ import (
 	pb "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/domain"
 	"booking-backend/reservation-service/startup/config"
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -47,19 +52,19 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 		reservation.Status = domain.Reserved
 	}
 
-  reservation.Duration, err= calculateDuration(reservation.DateFrom, reservation.DateTo)
+	reservation.Duration, err = calculateDuration(reservation.DateFrom, reservation.DateTo)
 
 	if err != nil {
 		return err
 	}
 
-  err =  service.store.CreateReservation(reservation)
+	err = service.store.CreateReservation(reservation)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
-  }
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
+	}
 
-  return err
+	return err
 }
 
 func (service *ReservationService) GetAll() ([]domain.Reservation, error) {
@@ -81,13 +86,13 @@ func (service *ReservationService) ConfirmReservation(reservationId string) erro
 		return err
 	}
 
-  err = service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+	err = service.cancelReservationsWithOverlap(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
-  }
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
+	}
 
-  return err
+	return err
 }
 
 func (service *ReservationService) Delete(reservationId string, user string) error {
@@ -108,11 +113,98 @@ func (service *ReservationService) Delete(reservationId string, user string) err
 
 	err = service.store.Cancel(id)
 
-  if err == nil {
-    service.prominentHostPublisher.Publish(reservation.Host)
-  }
+	if err == nil {
+		service.prominentHostPublisher.Publish(reservation.Host)
+	}
 
-  return err
+	return err
+}
+
+func (service *ReservationService) GetReservationFlights(reservationId, city, user string, isArrival bool) (*pb.FlightForReservationResponse, error) {
+	id, err := primitive.ObjectIDFromHex(reservationId)
+	if err != nil {
+		return nil, err
+	}
+
+	reservation, err := service.store.GetByIdAndUser(id, user)
+	if err != nil {
+		return nil, err
+	}
+
+	accommodation, err := getAccommodation(reservation.Accommodation)
+	if err != nil {
+		return nil, err
+	}
+
+	var flights []domain.Flight
+	if isArrival {
+		flights, err = GetReservationFlights(city, accommodation.Address.City, reservation.DateFrom)
+	} else {
+		flights, err = GetReservationFlights(accommodation.Address.City, city, reservation.DateTo)
+	}
+
+	hasAccount := hasAirlineAccount(user)
+
+	return &pb.FlightForReservationResponse{
+		HasAirlineAccount: hasAccount,
+		Flights:           ConvertFlightsToGrpcList(flights),
+	}, err
+}
+
+func GetReservationFlights(startingPoint, destination, date string) ([]domain.Flight, error) {
+	//Encode the data
+	postBody, _ := json.Marshal(map[string]string{
+		"date":          date,
+		"startingPoint": startingPoint,
+		"destination":   destination,
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	//Leverage Go's HTTP Post function to make request
+	resp, err := http.Post("localhost:3000/flights/reservation", "application/json", responseBody)
+	//Handle Error
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+	defer resp.Body.Close()
+	//Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	sb := string(body)
+	log.Printf(sb)
+
+	return nil, nil
+}
+
+func hasAirlineAccount(user string) bool {
+	return false
+}
+
+func getAccommodation(accommodationId string) (*accommodation_service.SingleAccommodation, error) {
+	accommodation := getAccommodationClient()
+
+	return accommodation.GetById(context.Background(), &accommodation_service.AccommodationIdRequest{
+		Id: accommodationId,
+	})
+}
+
+func ConvertFlightsToGrpcList(flights []domain.Flight) []*pb.Flight {
+	var converted []*pb.Flight
+
+	for _, entity := range flights {
+		newRes := pb.Flight{
+			Id:             entity.Id.Hex(),
+			DateAndTime:    entity.FlighDateAndTime.Format("2006-01-02 15:04:05"),
+			StartingPoint:  entity.StartingPoint,
+			Destination:    entity.Destination,
+			Price:          entity.Price,
+			RemainingSeats: entity.RemainingSeats,
+		}
+
+		converted = append(converted, &newRes)
+	}
+	return converted
 }
 
 func (service *ReservationService) ConvertToGrpcList(reservations []domain.Reservation) []*pb.Reservation {
@@ -187,7 +279,7 @@ func (service *ReservationService) GetExpiredCount(host string) (int32, error) {
 }
 
 func (service *ReservationService) GetIntervalCount(host string) (int32, error) {
-  return service.store.GetHostIntervalSum(host)
+	return service.store.GetHostIntervalSum(host)
 }
 
 func getAccommodationClient() accommodation_service.AccommodationServiceClient {
@@ -240,7 +332,7 @@ func calculateDuration(dateFromString, dateToString string) (int32, error) {
 		return 0, err
 	}
 
-  difference := dateTo.Sub(dateFrom)
+	difference := dateTo.Sub(dateFrom)
 
-  return int32(difference.Hours() / 24), nil
+	return int32(difference.Hours() / 24), nil
 }

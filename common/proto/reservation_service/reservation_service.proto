@@ -33,13 +33,39 @@ service ReservationService {
 	}
   rpc GetHostAnalytics(HostAnalyticsRequest) returns (HostAnalyticsResponse) {
 	}
+	rpc GetFlightsForReservation(FlightForReservationRequest) returns (FlightForReservationResponse){
+		option (google.api.http) = {
+			post: "/reservations/flights"
+			body: "*"
+		  };
+	}
+}
+
+message FlightForReservationRequest {
+	string reservation = 1;
+	string city = 2;
+	bool isArrival = 3;
+}
+
+message Flight {
+	string id = 1;
+	string dateAndTime = 2; 
+	string startingPoint = 3;
+	string destination = 4;
+	int32 price = 5;
+	int32 remainingSeats = 6;
+}
+
+message FlightForReservationResponse {
+	repeated Flight flights = 1;
+	bool hasAirlineAccount = 2;
 }
 
 message ReservationCreateRequest {
 	string accommodation = 1;
-  string dateFrom = 2;
-  string dateTo = 3;
-  int32 guests = 4;
+	string dateFrom = 2;
+	string dateTo = 3;
+	int32 guests = 4;
 }
 
 message ReservationCreateResponse {
