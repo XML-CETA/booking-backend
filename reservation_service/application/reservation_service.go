@@ -171,9 +171,9 @@ func (service *ReservationService) GetReservationFlights(reservationId, city, us
 func GetReservationFlights(startingPoint, destination, date string) ([]domain.Flight, error) {
 	fmt.Println("USO U GRPC F-JU")
 
-	serverPort := 3000
+	// serverPort := 3000
 
-	requestURL := fmt.Sprintf("http://localhost:%d/flights/reservation", serverPort)
+	requestURL := fmt.Sprintf("http://172.21.0.4:3000/flights/reservation/")
 	res, err := http.Get(requestURL)
 	if err != nil {
 		fmt.Printf("error making http request: %s\n", err)
