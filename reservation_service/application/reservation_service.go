@@ -7,14 +7,11 @@ import (
 	pb "booking-backend/common/proto/reservation_service"
 	"booking-backend/reservation-service/domain"
 	"booking-backend/reservation-service/startup/config"
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,13 +30,22 @@ func NewReservationService(store domain.ReservationStore, prominentHostPublisher
 }
 
 func (service *ReservationService) CreateReservation(reservation domain.Reservation) error {
+	fmt.Println("USO U SERVICE")
+
 	_, err := service.store.GetFirstActive(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
 
 	if err == nil {
 		return errors.New("Could not create, an active reservation with the same interval already exists")
 	}
 
+	fmt.Println("PROSO GET FIRST ACTIVE")
+
 	response, err := validateReservation(reservation.Accommodation, reservation.DateFrom, reservation.DateTo)
+
+	fmt.Println(response.Success)
+	fmt.Println(response.Host)
+
+	fmt.Println("NASO")
 
 	reservation.Host = response.Host
 	isAutomatic, err := isAutomaticConfirmation(reservation.Accommodation)
@@ -47,6 +53,8 @@ func (service *ReservationService) CreateReservation(reservation domain.Reservat
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(isAutomatic)
 
 	if isAutomatic.IsAutomaticConfirmation {
 		reservation.Status = domain.Reserved
@@ -126,15 +134,24 @@ func (service *ReservationService) GetReservationFlights(reservationId, city, us
 		return nil, err
 	}
 
+	fmt.Println("PROSO ID")
+	fmt.Println(id)
+
 	reservation, err := service.store.GetByIdAndUser(id, user)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("PROSO RESERVATION")
+	fmt.Println(reservation.Id)
+
 	accommodation, err := getAccommodation(reservation.Accommodation)
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("PROSO ACCOMMODATION")
+	fmt.Println(accommodation.Id)
 
 	var flights []domain.Flight
 	if isArrival {
@@ -152,27 +169,19 @@ func (service *ReservationService) GetReservationFlights(reservationId, city, us
 }
 
 func GetReservationFlights(startingPoint, destination, date string) ([]domain.Flight, error) {
-	//Encode the data
-	postBody, _ := json.Marshal(map[string]string{
-		"date":          date,
-		"startingPoint": startingPoint,
-		"destination":   destination,
-	})
-	responseBody := bytes.NewBuffer(postBody)
-	//Leverage Go's HTTP Post function to make request
-	resp, err := http.Post("localhost:3000/flights/reservation", "application/json", responseBody)
-	//Handle Error
+	fmt.Println("USO U GRPC F-JU")
+
+	serverPort := 3000
+
+	requestURL := fmt.Sprintf("http://localhost:%d/flights/reservation", serverPort)
+	res, err := http.Get(requestURL)
 	if err != nil {
-		log.Fatalf("An Error Occured %v", err)
+		fmt.Printf("error making http request: %s\n", err)
+		os.Exit(1)
 	}
-	defer resp.Body.Close()
-	//Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	sb := string(body)
-	log.Printf(sb)
+
+	fmt.Printf("client: got response!\n")
+	fmt.Printf("client: status code: %d\n", res.StatusCode)
 
 	return nil, nil
 }

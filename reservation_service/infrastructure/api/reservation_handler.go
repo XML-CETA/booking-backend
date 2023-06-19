@@ -30,10 +30,13 @@ func (h ReservationHandler) Create(ctx context.Context, request *pb.ReservationC
 		return nil, err
 	}
 
+	fmt.Println("USO U HANDLER")
 	fmt.Println(user)
-	fmt.Println("USO U SERVIS")
 
 	newReservation := domain.MakeReservation(request.Guests, request.Accommodation, user, request.DateFrom, request.DateTo)
+
+	fmt.Println(newReservation.Guests)
+	fmt.Println(newReservation.Accommodation)
 
 	err = h.service.CreateReservation(newReservation)
 	if err != nil {

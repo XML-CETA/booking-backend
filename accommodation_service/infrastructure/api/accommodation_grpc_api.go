@@ -152,6 +152,10 @@ func (handler *AccommodationHandler) ValidateReservation(ctx context.Context, re
 		return nil, err
 	}
 
+	fmt.Println("PROSO STRING TO DATE")
+	fmt.Println(interval.DateFrom)
+	fmt.Println(interval.DateTo)
+
 	host, err := handler.service.ValidateReservation(id, interval)
 	if err != nil {
 		return nil, err
