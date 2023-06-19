@@ -70,7 +70,7 @@ func (h UserHandler) UpdateUser(ctx context.Context, request *pb.UpdateRequest) 
 		Role: reqUser.Role,
 	}
 
-  err := h.service.Update(u)
+	err := h.service.Update(u)
 	if err != nil {
 		return &pb.UpdateResponse{
 			Message: fmt.Sprintf(err.Error()),
@@ -83,40 +83,40 @@ func (h UserHandler) UpdateUser(ctx context.Context, request *pb.UpdateRequest) 
 }
 
 func (h UserHandler) DeleteUser(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-  user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
-  if err != nil {
-    return nil, err
-  }
+	user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
+	if err != nil {
+		return nil, err
+	}
 
-  userData, err := h.service.GetOne(user)
-  if err != nil {
-    return nil, err
-  }
+	userData, err := h.service.GetOne(user)
+	if err != nil {
+		return nil, err
+	}
 
-  canDelete, err := h.service.CanDelete(user, userData.Role)
-  if err != nil {
-    return nil, err
-  }
+	canDelete, err := h.service.CanDelete(user, userData.Role)
+	if err != nil {
+		return nil, err
+	}
 
-  if !canDelete {
-    return nil, errors.New("Unable to delete, user has leftover reservations")
-  }
+	if !canDelete {
+		return nil, errors.New("Unable to delete, user has leftover reservations")
+	}
 
-  if userData.Role == "HOST" {
-    err = h.service.DeleteHostAccommodations(user)
-    if err != nil {
-      return nil, err
-    }
-  }
+	if userData.Role == "HOST" {
+		err = h.service.DeleteHostAccommodations(user)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-  err = h.service.DeleteUserNotifications(user)
-  if err != nil {
-    return nil, err
-  }
+	err = h.service.DeleteUserNotifications(user)
+	if err != nil {
+		return nil, err
+	}
 
 	err = h.service.Delete(user)
 	if err != nil {
-    return nil, err
+		return nil, err
 	}
 
 	return &pb.DeleteResponse{
@@ -125,32 +125,33 @@ func (h UserHandler) DeleteUser(ctx context.Context, request *pb.DeleteRequest) 
 }
 
 func (h UserHandler) GetUserData(ctx context.Context, request *pb.GetRequest) (*pb.UserFull, error) {
-  user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
-  if err != nil {
-    return nil, err
-  }
+	user, err := Authorize(ctx, []string{"HOST", "REGULAR"})
+	if err != nil {
+		return nil, err
+	}
 
-  userData, err := h.service.GetOne(user)
+	userData, err := h.service.GetOne(user)
 
-  if err != nil {
-    return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
 	return &pb.UserFull{
-    Email: userData.Email,
-    Password: userData.Password,
-    Name: userData.Name,
-    Surname: userData.Surname,
-    Role: userData.Role,
-    IsProminent: userData.IsProminent,
-    Address: &pb.Address{
-      City: userData.Address.City,
-      Country: userData.Address.Country,
-      Street: userData.Address.Street,
-      Number: userData.Address.Number,
-    },
+		Email:       userData.Email,
+		Password:    userData.Password,
+		Name:        userData.Name,
+		Surname:     userData.Surname,
+		Role:        userData.Role,
+		IsProminent: userData.IsProminent,
+		Address: &pb.Address{
+			City:    userData.Address.City,
+			Country: userData.Address.Country,
+			Street:  userData.Address.Street,
+			Number:  userData.Address.Number,
+		},
 	}, nil
 }
+
 func (h UserHandler) LoginCheck(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := h.service.LoginCheck(request.Email, request.Password)
 
@@ -168,9 +169,22 @@ func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
-  if err != nil {
-    return "", err
-  }
+	if err != nil {
+		return "", err
+	}
 
 	return user.UserEmail, nil
+}
+
+func (h UserHandler) GetAllProminent(ctx context.Context, request *pb.ProminentUsersRequest) (*pb.ProminentUsersResponse, error) {
+	prominent, err := h.service.GetAllProminent()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ProminentUsersResponse{
+		Prominent: prominent,
+		Message:   fmt.Sprintf("Succesfully retrieved!"),
+	}, nil
 }

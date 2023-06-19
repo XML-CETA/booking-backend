@@ -181,3 +181,7 @@ func getAccommodationService() accommodation_service.AccommodationServiceClient 
 func getNotificationClient() notification_service.NotificationServiceClient {
 	return clients.NewNotificationClient(fmt.Sprintf("%s:%s", config.NewConfig().NotificationHost, config.NewConfig().NotificationPort))
 }
+
+func (service *UserService) GetAllProminent() ([]string, error) {
+	return service.store.GetAllProminent()
+}

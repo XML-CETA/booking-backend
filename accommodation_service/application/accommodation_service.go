@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -196,6 +197,37 @@ func checkOverlap(interval domain.DateInterval, helperInterval domain.DateInterv
 
 func getUserClient() users_service.UsersServiceClient {
 	return clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
+}
+
+func (service *AccommodationService) FilterAccommodations(request *pb.FilterAccommodationsRequest) ([]*pb.SingleAccommodation, error) {
+	accommodations := request.Accommodations
+	user := getUserClient()
+	prominents, err := user.GetAllProminent(context.Background(), &users_service.ProminentUsersRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	filteredAccommodations := make([]*pb.SingleAccommodation, 0)
+	for _, accommodation := range accommodations {
+		if strings.Contains(accommodation.Conveniences, request.Conveniences) && request.IsProminent == ProminenceCheck(prominents.Prominent, accommodation.Host) {
+			for _, appointment := range accommodation.FreeAppointments {
+				if appointment.Price <= request.HighPrice && appointment.Price >= request.LowPrice {
+					filteredAccommodations = append(filteredAccommodations, accommodation)
+					break
+				}
+			}
+		}
+	}
+	return filteredAccommodations, nil
+}
+
+func ProminenceCheck(prominents []string, check string) bool {
+	for _, str := range prominents {
+		if str == check {
+			return true
+		}
+	}
+	return false
 }
 
 //GRPC CONVERTERS -> OVO IZMESTITI POSLE

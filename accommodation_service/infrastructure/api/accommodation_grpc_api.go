@@ -190,3 +190,14 @@ func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 
 	return user.UserEmail, err
 }
+
+func (handler *AccommodationHandler) FilterAccommodations(ctx context.Context, request *pb.FilterAccommodationsRequest) (*pb.FilterAccommodationsResponse, error) {
+	accommodations, err := handler.service.FilterAccommodations(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.FilterAccommodationsResponse{
+		Accommodations: accommodations,
+	}, err
+}

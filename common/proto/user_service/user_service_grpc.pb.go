@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UsersService_CreateUser_FullMethodName  = "/UsersService/CreateUser"
-	UsersService_UpdateUser_FullMethodName  = "/UsersService/UpdateUser"
-	UsersService_DeleteUser_FullMethodName  = "/UsersService/DeleteUser"
-	UsersService_GetUserData_FullMethodName = "/UsersService/GetUserData"
-	UsersService_LoginCheck_FullMethodName  = "/UsersService/LoginCheck"
+	UsersService_CreateUser_FullMethodName      = "/UsersService/CreateUser"
+	UsersService_UpdateUser_FullMethodName      = "/UsersService/UpdateUser"
+	UsersService_DeleteUser_FullMethodName      = "/UsersService/DeleteUser"
+	UsersService_GetUserData_FullMethodName     = "/UsersService/GetUserData"
+	UsersService_GetAllProminent_FullMethodName = "/UsersService/GetAllProminent"
+	UsersService_LoginCheck_FullMethodName      = "/UsersService/LoginCheck"
 )
 
 // UsersServiceClient is the client API for UsersService service.
@@ -34,6 +35,7 @@ type UsersServiceClient interface {
 	UpdateUser(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	GetUserData(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*UserFull, error)
+	GetAllProminent(ctx context.Context, in *ProminentUsersRequest, opts ...grpc.CallOption) (*ProminentUsersResponse, error)
 	LoginCheck(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 }
 
@@ -81,6 +83,15 @@ func (c *usersServiceClient) GetUserData(ctx context.Context, in *GetRequest, op
 	return out, nil
 }
 
+func (c *usersServiceClient) GetAllProminent(ctx context.Context, in *ProminentUsersRequest, opts ...grpc.CallOption) (*ProminentUsersResponse, error) {
+	out := new(ProminentUsersResponse)
+	err := c.cc.Invoke(ctx, UsersService_GetAllProminent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *usersServiceClient) LoginCheck(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, UsersService_LoginCheck_FullMethodName, in, out, opts...)
@@ -98,6 +109,7 @@ type UsersServiceServer interface {
 	UpdateUser(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	DeleteUser(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	GetUserData(context.Context, *GetRequest) (*UserFull, error)
+	GetAllProminent(context.Context, *ProminentUsersRequest) (*ProminentUsersResponse, error)
 	LoginCheck(context.Context, *LoginRequest) (*LoginResponse, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
@@ -117,6 +129,9 @@ func (UnimplementedUsersServiceServer) DeleteUser(context.Context, *DeleteReques
 }
 func (UnimplementedUsersServiceServer) GetUserData(context.Context, *GetRequest) (*UserFull, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
+}
+func (UnimplementedUsersServiceServer) GetAllProminent(context.Context, *ProminentUsersRequest) (*ProminentUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllProminent not implemented")
 }
 func (UnimplementedUsersServiceServer) LoginCheck(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginCheck not implemented")
@@ -206,6 +221,24 @@ func _UsersService_GetUserData_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_GetAllProminent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProminentUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetAllProminent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetAllProminent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetAllProminent(ctx, req.(*ProminentUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UsersService_LoginCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginRequest)
 	if err := dec(in); err != nil {
@@ -246,6 +279,10 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserData",
 			Handler:    _UsersService_GetUserData_Handler,
+		},
+		{
+			MethodName: "GetAllProminent",
+			Handler:    _UsersService_GetAllProminent_Handler,
 		},
 		{
 			MethodName: "LoginCheck",

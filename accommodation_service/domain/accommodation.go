@@ -16,6 +16,7 @@ type Accommodation struct {
 	Name             string               `json:"name" bson:"name"`
 	Appointments     []Appointment        `json:"appointments" bson:"appointments"`
 	Host             string               `json:"host"`
+	Conveniences     string               `json:"conveniences"`
 	ConfirmationType ConfirmationType     `json:"confirmationType" bson:"confirmationType"`
 }
 
@@ -49,6 +50,7 @@ func MakeCreateAccommodation(accommodation *pb.AccommodationCreateRequest, host 
 		Name:             accommodation.Name,
 		Address:          address,
 		Host:             host,
+		Conveniences:     accommodation.Conveniences,
 		ConfirmationType: ConfirmationType(accommodation.ConfirmationType),
 	}
 }
@@ -68,12 +70,13 @@ func MakeAccommodation(accommodation *pb.SingleAccommodation) (Accommodation, er
 	}
 
 	return Accommodation{
-		Id:        id,
-		Longitude: accommodation.Longitude,
-		Latitude:  accommodation.Latitude,
-		MinGuests: accommodation.MinGuests,
-		MaxGuests: accommodation.MaxGuests,
-		Name:      accommodation.Name,
-		Address:   address,
+		Id:           id,
+		Longitude:    accommodation.Longitude,
+		Latitude:     accommodation.Latitude,
+		MinGuests:    accommodation.MinGuests,
+		MaxGuests:    accommodation.MaxGuests,
+		Name:         accommodation.Name,
+		Conveniences: accommodation.Conveniences,
+		Address:      address,
 	}, nil
 }
