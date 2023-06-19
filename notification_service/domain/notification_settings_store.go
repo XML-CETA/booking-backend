@@ -7,4 +7,5 @@ type NotificationSettingsStore interface {
   NewUserSettings(settings NotificationSettings) error
   GetUserSettings(user string) (NotificationSettings, error)
   Update(user string, body *notification_service.UpdateUserSettingsRequest) error
+  RedactUser(user string) error
 }

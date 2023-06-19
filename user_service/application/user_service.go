@@ -154,8 +154,16 @@ func (service *UserService) DeleteHostAccommodations(user string) error {
   _, err := accommodations.DeleteHostAccommodations(context.Background(), &accommodation_service.DeleteHostAccommodationsRequest{Host: user})
 
   return err
-
 }
+
+func (service *UserService) DeleteUserNotifications(user string) error {
+  notifications := getNotificationClient()
+
+  _, err := notifications.RedactUser(context.Background(), &notification_service.RedactUserRequest{User: user})
+
+  return err
+}
+
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
 	return reservationAnalytics.CancelRate < 5.0 &&
 		reservationAnalytics.ExpiredCount >= 5 &&

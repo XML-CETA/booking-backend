@@ -22,6 +22,7 @@ const (
 	NotificationService_GetUserNotifications_FullMethodName = "/NotificationService/GetUserNotifications"
 	NotificationService_UpdateUserSettings_FullMethodName   = "/NotificationService/UpdateUserSettings"
 	NotificationService_NewUserSettings_FullMethodName      = "/NotificationService/NewUserSettings"
+	NotificationService_RedactUser_FullMethodName           = "/NotificationService/RedactUser"
 )
 
 // NotificationServiceClient is the client API for NotificationService service.
@@ -31,6 +32,7 @@ type NotificationServiceClient interface {
 	GetUserNotifications(ctx context.Context, in *GetUserNotificationsRequest, opts ...grpc.CallOption) (*GetUserNotificationsResponse, error)
 	UpdateUserSettings(ctx context.Context, in *UpdateUserSettingsRequest, opts ...grpc.CallOption) (*GetUserNotificationsResponse, error)
 	NewUserSettings(ctx context.Context, in *NewUserSettingsRequest, opts ...grpc.CallOption) (*NewUserSettingsResponse, error)
+	RedactUser(ctx context.Context, in *RedactUserRequest, opts ...grpc.CallOption) (*RedactUserResponse, error)
 }
 
 type notificationServiceClient struct {
@@ -68,6 +70,15 @@ func (c *notificationServiceClient) NewUserSettings(ctx context.Context, in *New
 	return out, nil
 }
 
+func (c *notificationServiceClient) RedactUser(ctx context.Context, in *RedactUserRequest, opts ...grpc.CallOption) (*RedactUserResponse, error) {
+	out := new(RedactUserResponse)
+	err := c.cc.Invoke(ctx, NotificationService_RedactUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationServiceServer is the server API for NotificationService service.
 // All implementations must embed UnimplementedNotificationServiceServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type NotificationServiceServer interface {
 	GetUserNotifications(context.Context, *GetUserNotificationsRequest) (*GetUserNotificationsResponse, error)
 	UpdateUserSettings(context.Context, *UpdateUserSettingsRequest) (*GetUserNotificationsResponse, error)
 	NewUserSettings(context.Context, *NewUserSettingsRequest) (*NewUserSettingsResponse, error)
+	RedactUser(context.Context, *RedactUserRequest) (*RedactUserResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedNotificationServiceServer) UpdateUserSettings(context.Context
 }
 func (UnimplementedNotificationServiceServer) NewUserSettings(context.Context, *NewUserSettingsRequest) (*NewUserSettingsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewUserSettings not implemented")
+}
+func (UnimplementedNotificationServiceServer) RedactUser(context.Context, *RedactUserRequest) (*RedactUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RedactUser not implemented")
 }
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 
@@ -158,6 +173,24 @@ func _NotificationService_NewUserSettings_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_RedactUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RedactUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).RedactUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_RedactUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).RedactUser(ctx, req.(*RedactUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationService_ServiceDesc is the grpc.ServiceDesc for NotificationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NewUserSettings",
 			Handler:    _NotificationService_NewUserSettings_Handler,
+		},
+		{
+			MethodName: "RedactUser",
+			Handler:    _NotificationService_RedactUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

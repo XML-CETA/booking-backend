@@ -20,6 +20,9 @@ service NotificationService {
 
   rpc NewUserSettings(NewUserSettingsRequest) returns (NewUserSettingsResponse) {
   }
+
+  rpc RedactUser(RedactUserRequest) returns (RedactUserResponse) {
+  }
 }
 
 message GetUserNotificationsRequest {
@@ -60,3 +63,10 @@ message UpdateUserSettingsRequest {
   bool prominentStatusChange = 5;
   bool reservationResponse = 6;
 }
+
+message RedactUserRequest {
+  string user = 1;
+  }
+
+message RedactUserResponse {
+  }

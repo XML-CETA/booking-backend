@@ -55,6 +55,16 @@ func (service *NotificationService) GetByUser(user string) ([]domain.Notificatio
   return service.notifications.GetAllByUser(user)
 }
 
+func (service *NotificationService) RedactUser(user string) error {
+  err := service.notificationSettings.RedactUser(user)
+  if err != nil {
+    return err
+  }
+
+  err = service.notifications.RedactUser(user)
+  return err
+}
+
 func (service *NotificationService) ProcessNotification(notification messaging.NotificationMessage) {
   settings, err := service.GetUserSettings(notification.User)
   if err != nil {

@@ -109,6 +109,11 @@ func (h UserHandler) DeleteUser(ctx context.Context, request *pb.DeleteRequest) 
     }
   }
 
+  err = h.service.DeleteUserNotifications(user)
+  if err != nil {
+    return nil, err
+  }
+
 	err = h.service.Delete(user)
 	if err != nil {
     return nil, err
