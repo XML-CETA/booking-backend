@@ -196,10 +196,10 @@ func checkOverlap(interval domain.DateInterval, helperInterval domain.DateInterv
 }
 
 func getUserClient() users_service.UsersServiceClient {
-	return clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
+	return clients.NewUsersClient(fmt.Sprintf("%s:%s", config.NewConfig().UserServiceHost, config.NewConfig().UserServicePort))
 }
 
-func (service *AccommodationService) FilterAccommodations(request *pb.FilterAccommodationsRequest) ([]*pb.SingleAccommodation, error) {
+func (service *AccommodationService) FilterAccommodations(request *pb.FilterAccommodationsRequest) ([]*pb.SearchedAccommodation, error) {
 	accommodations := request.Accommodations
 	user := getUserClient()
 	prominents, err := user.GetAllProminent(context.Background(), &users_service.ProminentUsersRequest{})
@@ -207,15 +207,10 @@ func (service *AccommodationService) FilterAccommodations(request *pb.FilterAcco
 		return nil, err
 	}
 
-	filteredAccommodations := make([]*pb.SingleAccommodation, 0)
+	filteredAccommodations := make([]*pb.SearchedAccommodation, 0)
 	for _, accommodation := range accommodations {
-		if strings.Contains(accommodation.Conveniences, request.Conveniences) && request.IsProminent == ProminenceCheck(prominents.Prominent, accommodation.Host) {
-			for _, appointment := range accommodation.FreeAppointments {
-				if appointment.Price <= request.HighPrice && appointment.Price >= request.LowPrice {
-					filteredAccommodations = append(filteredAccommodations, accommodation)
-					break
-				}
-			}
+		if strings.Contains(strings.ToLower(accommodation.Conveniences), strings.ToLower(request.Conveniences)) && request.IsProminent == ProminenceCheck(prominents.Prominent, accommodation.Host) && accommodation.TotalPrice <= request.HighPrice && accommodation.TotalPrice >= request.LowPrice {
+			filteredAccommodations = append(filteredAccommodations, accommodation)
 		}
 	}
 	return filteredAccommodations, nil
@@ -267,6 +262,7 @@ func ConvertToGrpc(accommodation *domain.Accommodation) *pb.SingleAccommodation 
 		FreeAppointments: allAppointments,
 		Host:             accommodation.Host,
 		ConfirmationType: pb.ConfirmationType(accommodation.ConfirmationType),
+		Conveniences:     accommodation.Conveniences,
 	}
 
 	return &res
@@ -283,9 +279,10 @@ func ConvertToSearchedGrpc(accommodation *domain.Accommodation, guestNumber int3
 			Country: accommodation.Address.Country,
 			Street:  accommodation.Address.Street,
 		},
-		TotalPrice: float64(int32(appointment.Price) * GetIntervalDuration(appointment.Interval)),
-		UnitPrice:  appointment.Price,
-		Host:       accommodation.Host,
+		TotalPrice:   float64(int32(appointment.Price) * GetIntervalDuration(appointment.Interval)),
+		UnitPrice:    appointment.Price,
+		Host:         accommodation.Host,
+		Conveniences: accommodation.Conveniences,
 	}
 
 	return &res
