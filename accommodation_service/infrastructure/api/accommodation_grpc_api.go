@@ -56,7 +56,6 @@ func (handler *AccommodationHandler) Create(ctx context.Context, request *pb.Acc
 	}
 
 	newAccommodation := domain.MakeCreateAccommodation(request, user)
-
 	err = handler.service.Create(newAccommodation)
 	if err != nil {
 		return nil, err
@@ -176,12 +175,11 @@ func (handler *AccommodationHandler) IsAutomaticConfirmation(ctx context.Context
 }
 
 func (handler *AccommodationHandler) DeleteHostAccommodations(ctx context.Context, request *pb.DeleteHostAccommodationsRequest) (*pb.DeleteHostAccommodationsResponse, error) {
-  err := handler.service.DeleteAllByHost(request.Host)
+	err := handler.service.DeleteAllByHost(request.Host)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.DeleteHostAccommodationsResponse{
-	}, nil
+	return &pb.DeleteHostAccommodationsResponse{}, nil
 }
 func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	auth := clients.NewAuthClient(fmt.Sprintf("%s:%s", config.NewConfig().AuthServiceHost, config.NewConfig().AuthServicePort))
@@ -189,4 +187,15 @@ func Authorize(ctx context.Context, roleGuard []string) (string, error) {
 	user, err := auth.Authorize(metadata.NewOutgoingContext(ctx, md), &auth_service.AuthorizeRequest{RoleGuard: roleGuard})
 
 	return user.UserEmail, err
+}
+
+func (handler *AccommodationHandler) FilterAccommodations(ctx context.Context, request *pb.FilterAccommodationsRequest) (*pb.FilterAccommodationsResponse, error) {
+	accommodations, err := handler.service.FilterAccommodations(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.FilterAccommodationsResponse{
+		Accommodations: accommodations,
+	}, err
 }

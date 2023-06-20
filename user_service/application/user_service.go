@@ -133,35 +133,35 @@ func (service *UserService) ProminentUser(host string) {
 }
 
 func (service *UserService) CanDelete(user string, role string) (bool, error) {
-  reservations := getReservationClient()
+	reservations := getReservationClient()
 
-  response, err := reservations.HasLeftoverReservations(context.Background(), &reservation_service.LeftoverReservationsRequest{
-    Role: role,
-    User: user,
-  })
+	response, err := reservations.HasLeftoverReservations(context.Background(), &reservation_service.LeftoverReservationsRequest{
+		Role: role,
+		User: user,
+	})
 
-  if err != nil {
-    return false, err
-  }
+	if err != nil {
+		return false, err
+	}
 
-  return response.CanDelete, nil
+	return response.CanDelete, nil
 
 }
 
 func (service *UserService) DeleteHostAccommodations(user string) error {
-  accommodations := getAccommodationService()
+	accommodations := getAccommodationService()
 
-  _, err := accommodations.DeleteHostAccommodations(context.Background(), &accommodation_service.DeleteHostAccommodationsRequest{Host: user})
+	_, err := accommodations.DeleteHostAccommodations(context.Background(), &accommodation_service.DeleteHostAccommodationsRequest{Host: user})
 
-  return err
+	return err
 }
 
 func (service *UserService) DeleteUserNotifications(user string) error {
-  notifications := getNotificationClient()
+	notifications := getNotificationClient()
 
-  _, err := notifications.RedactUser(context.Background(), &notification_service.RedactUserRequest{User: user})
+	_, err := notifications.RedactUser(context.Background(), &notification_service.RedactUserRequest{User: user})
 
-  return err
+	return err
 }
 
 func isProminent(reservationAnalytics *reservation_service.HostAnalyticsResponse) bool {
@@ -180,4 +180,8 @@ func getAccommodationService() accommodation_service.AccommodationServiceClient 
 
 func getNotificationClient() notification_service.NotificationServiceClient {
 	return clients.NewNotificationClient(fmt.Sprintf("%s:%s", config.NewConfig().NotificationHost, config.NewConfig().NotificationPort))
+}
+
+func (service *UserService) GetAllProminent() ([]string, error) {
+	return service.store.GetAllProminent()
 }

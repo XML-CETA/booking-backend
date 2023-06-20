@@ -48,12 +48,14 @@ service UsersService {
       delete: "/user"
     };
   }
+
   rpc GetUserData(GetRequest) returns (UserFull) {
     option (google.api.http) = {
       get: "/user"
     };
   }
-
+  rpc GetAllProminent(ProminentUsersRequest) returns (ProminentUsersResponse) {
+  }
   rpc LoginCheck(LoginRequest) returns (LoginResponse) {
   }
 }
@@ -92,3 +94,11 @@ message LoginResponse {
 
 message GetRequest {
   }
+
+message ProminentUsersResponse{
+  repeated string prominent = 1;
+  string message = 2;
+}
+
+message ProminentUsersRequest{
+}

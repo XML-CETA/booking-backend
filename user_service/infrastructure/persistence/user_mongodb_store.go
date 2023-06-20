@@ -56,7 +56,7 @@ func (store *UserMongoDBStore) GetOne(email string) (domain.User, error) {
 	return result, err
 }
 
-func (store *UserMongoDBStore) UpdateProminent(isProminent bool, host string) (error) {
+func (store *UserMongoDBStore) UpdateProminent(isProminent bool, host string) error {
 	filter := bson.D{{Key: "email", Value: host}}
 
 	update := bson.D{
@@ -68,4 +68,29 @@ func (store *UserMongoDBStore) UpdateProminent(isProminent bool, host string) (e
 	_, err := store.users.UpdateOne(context.TODO(), filter, update)
 
 	return err
+}
+
+func (store *UserMongoDBStore) GetAllProminent() ([]string, error) {
+	filter := bson.D{{Key: "isprominent", Value: true}}
+
+	cur, err := store.users.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.TODO())
+
+	var emails []string
+	for cur.Next(context.TODO()) {
+		var user domain.User
+		if err := cur.Decode(&user); err != nil {
+			return nil, err
+		}
+		emails = append(emails, user.Email)
+	}
+
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	return emails, nil
 }

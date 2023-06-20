@@ -50,6 +50,12 @@ service AccommodationService{
         body: "*"
       };
     }
+    rpc FilterAccommodations(FilterAccommodationsRequest) returns (FilterAccommodationsResponse){
+      option (google.api.http) = {
+        post: "/accommodations/filter"
+        body: "*"
+      };
+    }
     rpc ValidateReservation(ValidateReservationRequest) returns (ValidateReservationResponse) {}
     rpc IsAutomaticConfirmation(AccommodationIdRequest) returns (IsAutomaticConfirmationResponse){}
     rpc DeleteHostAccommodations(DeleteHostAccommodationsRequest) returns (DeleteHostAccommodationsResponse){}
@@ -94,6 +100,7 @@ AccommodationAddress address = 7;
 repeated AppointmentResponse freeAppointments = 8;
 string host = 9;
 ConfirmationType confirmationType = 10;
+string conveniences = 11;
 }
 
 enum ConfirmationType {
@@ -109,6 +116,7 @@ message AccommodationCreateRequest {
   string name = 5;
   AccommodationAddress address = 6;
   ConfirmationType confirmationType = 7;
+  string conveniences = 8;
 }
 
 message Response {
@@ -137,6 +145,7 @@ message SearchedAccommodation{
   string host = 6;
   double totalPrice = 7;
   double unitPrice = 8;
+  string conveniences = 9;
 }
 
 message SearchAccommodationsResponse{
@@ -168,3 +177,17 @@ message DeleteHostAccommodationsRequest {
 
 message DeleteHostAccommodationsResponse {
   }
+
+message FilterAccommodationsRequest {
+  string conveniences = 1;
+  double lowPrice = 2;
+  double highPrice = 3;
+  bool isProminent = 4;
+  repeated SearchedAccommodation accommodations = 5;
+}
+
+message FilterAccommodationsResponse {
+  repeated SearchedAccommodation accommodations = 1;
+}
+
+

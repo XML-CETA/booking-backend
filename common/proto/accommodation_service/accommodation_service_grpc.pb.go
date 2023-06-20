@@ -27,6 +27,7 @@ const (
 	AccommodationService_GetById_FullMethodName                  = "/AccommodationService/GetById"
 	AccommodationService_CreateAppointment_FullMethodName        = "/AccommodationService/CreateAppointment"
 	AccommodationService_UpdateAppointment_FullMethodName        = "/AccommodationService/UpdateAppointment"
+	AccommodationService_FilterAccommodations_FullMethodName     = "/AccommodationService/FilterAccommodations"
 	AccommodationService_ValidateReservation_FullMethodName      = "/AccommodationService/ValidateReservation"
 	AccommodationService_IsAutomaticConfirmation_FullMethodName  = "/AccommodationService/IsAutomaticConfirmation"
 	AccommodationService_DeleteHostAccommodations_FullMethodName = "/AccommodationService/DeleteHostAccommodations"
@@ -44,6 +45,7 @@ type AccommodationServiceClient interface {
 	GetById(ctx context.Context, in *AccommodationIdRequest, opts ...grpc.CallOption) (*SingleAccommodation, error)
 	CreateAppointment(ctx context.Context, in *SingleAppointment, opts ...grpc.CallOption) (*Response, error)
 	UpdateAppointment(ctx context.Context, in *UpdateAppointmentRequest, opts ...grpc.CallOption) (*Response, error)
+	FilterAccommodations(ctx context.Context, in *FilterAccommodationsRequest, opts ...grpc.CallOption) (*FilterAccommodationsResponse, error)
 	ValidateReservation(ctx context.Context, in *ValidateReservationRequest, opts ...grpc.CallOption) (*ValidateReservationResponse, error)
 	IsAutomaticConfirmation(ctx context.Context, in *AccommodationIdRequest, opts ...grpc.CallOption) (*IsAutomaticConfirmationResponse, error)
 	DeleteHostAccommodations(ctx context.Context, in *DeleteHostAccommodationsRequest, opts ...grpc.CallOption) (*DeleteHostAccommodationsResponse, error)
@@ -129,6 +131,15 @@ func (c *accommodationServiceClient) UpdateAppointment(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *accommodationServiceClient) FilterAccommodations(ctx context.Context, in *FilterAccommodationsRequest, opts ...grpc.CallOption) (*FilterAccommodationsResponse, error) {
+	out := new(FilterAccommodationsResponse)
+	err := c.cc.Invoke(ctx, AccommodationService_FilterAccommodations_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accommodationServiceClient) ValidateReservation(ctx context.Context, in *ValidateReservationRequest, opts ...grpc.CallOption) (*ValidateReservationResponse, error) {
 	out := new(ValidateReservationResponse)
 	err := c.cc.Invoke(ctx, AccommodationService_ValidateReservation_FullMethodName, in, out, opts...)
@@ -168,6 +179,7 @@ type AccommodationServiceServer interface {
 	GetById(context.Context, *AccommodationIdRequest) (*SingleAccommodation, error)
 	CreateAppointment(context.Context, *SingleAppointment) (*Response, error)
 	UpdateAppointment(context.Context, *UpdateAppointmentRequest) (*Response, error)
+	FilterAccommodations(context.Context, *FilterAccommodationsRequest) (*FilterAccommodationsResponse, error)
 	ValidateReservation(context.Context, *ValidateReservationRequest) (*ValidateReservationResponse, error)
 	IsAutomaticConfirmation(context.Context, *AccommodationIdRequest) (*IsAutomaticConfirmationResponse, error)
 	DeleteHostAccommodations(context.Context, *DeleteHostAccommodationsRequest) (*DeleteHostAccommodationsResponse, error)
@@ -201,6 +213,9 @@ func (UnimplementedAccommodationServiceServer) CreateAppointment(context.Context
 }
 func (UnimplementedAccommodationServiceServer) UpdateAppointment(context.Context, *UpdateAppointmentRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAppointment not implemented")
+}
+func (UnimplementedAccommodationServiceServer) FilterAccommodations(context.Context, *FilterAccommodationsRequest) (*FilterAccommodationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FilterAccommodations not implemented")
 }
 func (UnimplementedAccommodationServiceServer) ValidateReservation(context.Context, *ValidateReservationRequest) (*ValidateReservationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateReservation not implemented")
@@ -368,6 +383,24 @@ func _AccommodationService_UpdateAppointment_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccommodationService_FilterAccommodations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FilterAccommodationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccommodationServiceServer).FilterAccommodations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccommodationService_FilterAccommodations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccommodationServiceServer).FilterAccommodations(ctx, req.(*FilterAccommodationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AccommodationService_ValidateReservation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ValidateReservationRequest)
 	if err := dec(in); err != nil {
@@ -460,6 +493,10 @@ var AccommodationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateAppointment",
 			Handler:    _AccommodationService_UpdateAppointment_Handler,
+		},
+		{
+			MethodName: "FilterAccommodations",
+			Handler:    _AccommodationService_FilterAccommodations_Handler,
 		},
 		{
 			MethodName: "ValidateReservation",
