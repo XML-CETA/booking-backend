@@ -2,7 +2,11 @@ package application
 
 import (
 	"booking-backend/accommodation_service/domain"
+	"booking-backend/accommodation_service/startup/config"
+	"booking-backend/common/clients"
 	pb "booking-backend/common/proto/accommodation_service"
+	"booking-backend/common/proto/reservation_service"
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -68,6 +72,12 @@ func (service *AccommodationService) SearchAccommodations(request *pb.SearchAcco
 		if accommodation.MinGuests <= request.GuestsNumber && accommodation.MaxGuests >= request.GuestsNumber && accommodation.Address.Country == request.Country && accommodation.Address.City == request.City {
 			for _, appointment := range accommodation.Appointments {
 				interval, _ := domain.StringToDateInterval(request.Interval)
+				dateFrom, dateTo := domain.DateIntervalToString(appointment.Interval)
+				reserved, _ := isAppointmentReserved(accommodation.Id.Hex(), dateFrom, dateTo)
+
+				if reserved.Reserved {
+					break
+				}
 				if isExactOverlap(appointment.Interval, interval) {
 					filteredAccommodations = append(filteredAccommodations, ConvertToSearchedGrpc(&accommodation, request.GuestsNumber, &appointment))
 					break
@@ -264,4 +274,17 @@ func GetIntervalDuration(interval domain.DateInterval) int32 {
 	duration := interval.DateTo.Sub(interval.DateFrom)
 	days := int32(duration.Hours() / 24)
 	return days
+}
+
+func getReservationClient() reservation_service.ReservationServiceClient {
+	return clients.NewReservationClient(fmt.Sprintf("%s:%s", config.NewConfig().ReservationServiceHost, config.NewConfig().ReservationServicePort))
+}
+func isAppointmentReserved(accommodation, dateFrom, dateTo string) (*reservation_service.IsAppointmentReservedResponse, error) {
+	reservation := getReservationClient()
+
+	return reservation.IsAppointmentReserved(context.Background(), &reservation_service.IsAppointmentReservedRequest{
+		Accommodation: accommodation,
+		DateFrom:      dateFrom,
+		DateTo:        dateTo,
+	})
 }
