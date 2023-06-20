@@ -145,6 +145,7 @@ message SearchedAccommodation{
   string host = 6;
   double totalPrice = 7;
   double unitPrice = 8;
+  string conveniences = 9;
 }
 
 message SearchAccommodationsResponse{
@@ -182,11 +183,11 @@ message FilterAccommodationsRequest {
   double lowPrice = 2;
   double highPrice = 3;
   bool isProminent = 4;
-  repeated SingleAccommodation accommodations = 5;
+  repeated SearchedAccommodation accommodations = 5;
 }
 
 message FilterAccommodationsResponse {
-  repeated SingleAccommodation accommodations = 1;
+  repeated SearchedAccommodation accommodations = 1;
 }
 
 

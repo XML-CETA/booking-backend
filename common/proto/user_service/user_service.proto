@@ -95,10 +95,6 @@ message LoginResponse {
 message GetRequest {
   }
 
-message RateUserResponse{
-  string message = 1;
-}
-
 message ProminentUsersResponse{
   repeated string prominent = 1;
   string message = 2;
